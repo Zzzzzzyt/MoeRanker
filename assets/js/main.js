@@ -2,14 +2,14 @@ var currentid = 0;
 var char_index, attr_index, char2attr, moegirl_to_bgm;
 var weight, count;
 
-fetch("/data/data_min.json")
+fetch("data/data_min.json")
   .then((response) => response.json())
   .then((data) => {
     console.log("main db loaded:", data);
     char_index = data["char_index"];
     attr_index = data["attr_index"];
     char2attr = data["char2attr"];
-    fetch("/data/moegirl_to_bgm.json")
+    fetch("data/moegirl_to_bgm.json")
       .then((response) => response.json())
       .then((data) => {
         console.log("mapping loaded:", data);
@@ -28,7 +28,7 @@ function refresh() {
   var nameElement = document.getElementById("name");
   nameElement.innerText = char.page;
   nameElement.href = "https://zh.moegirl.org.cn" + char.url;
-  var src = "/assets/images/" + moegirl_to_bgm[char.page];
+  var src = "assets/images/" + moegirl_to_bgm[char.page];
   document.getElementById("char-image").setAttribute("src", src + "-large.jpg");
   document.getElementById("char-avatar").setAttribute("src", src + "-avatar.jpg");
 }
