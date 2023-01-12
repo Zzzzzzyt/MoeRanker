@@ -70,7 +70,7 @@ function compute() {
     attr = attr_index[result[i].attr];
     var href = "";
     if (attr.article !== undefined) {
-      href = ` href="https://zh.moegirl.org.cn${attr.article.url}`;
+      href = ` href="https://zh.moegirl.org.cn${attr.article.url}"`;
     }
     var name = `<a${href} target="_blank">${attr.name}</a>`;
     tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating}</td><td>${count[result[i].attr]}</td></tr>`;
