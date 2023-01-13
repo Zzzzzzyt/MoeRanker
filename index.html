@@ -20,36 +20,46 @@
         <!-- Github@<a href="https://github.com/Zzzzzzyt/table-tennis-scoreboard" target="_blank">Zzzzzzyt/table-tennis-scoreboard</a> -->
       </p>
       <hr />
-      <div style="float: right; clear: none; width: 30%">
-        <table class="table table-bordered">
-          <thead>
-            <th scope="col">#</th>
-            <th scope="col">Name</th>
-            <th scope="col">Rating</th>
-            <th scope="col">Count</th>
-          </thead>
-          <tbody id="ranking-table"></tbody>
-        </table>
+      <div style="display: flex; flex-wrap: wrap; padding: 10px">
+        <div style="flex-grow: 1">
+          <p style="font-size: 40px">
+            <!-- <img id="char-avatar" style="height: 50px; margin: 5px" /> -->
+            <a href="" id="name" target="_blank">Loading</a>
+          </p>
+          <div class="input-group" style="max-width: 250px">
+            <input id="manual-rating" type="number" class="form-control" value="0" />
+            <button class="form-control btn btn-primary" onclick="scoreManual();">Manual</button>
+            <button class="form-control btn btn-primary" onclick="skip();">Skip</button>
+          </div>
+          <br />
+          <div class="input-group">
+            <button class="form-control btn btn-danger" onclick="score(-16);">-5</button>
+            <button class="form-control btn btn-danger" onclick="score(-8);">-4</button>
+            <button class="form-control btn btn-danger" onclick="score(-4);">-3</button>
+            <button class="form-control btn btn-danger" onclick="score(-2);">-2</button>
+            <button class="form-control btn btn-danger" onclick="score(-1);">-1</button>
+            <button class="form-control btn btn-warning" onclick="score(0);">0</button>
+            <button class="form-control btn btn-success" onclick="score(1);">1</button>
+            <button class="form-control btn btn-success" onclick="score(2);">2</button>
+            <button class="form-control btn btn-success" onclick="score(4);">3</button>
+            <button class="form-control btn btn-success" onclick="score(8);">4</button>
+            <button class="form-control btn btn-success" onclick="score(16);">5</button>
+          </div>
+          <br />
+          <img id="char-image" style="width: 100%; height: 500px; object-fit: contain; object-position: top left" />
+        </div>
+        <div style="width: 30%; min-width: 300px; padding: 10px">
+          <table class="table table-bordered">
+            <thead>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">Rating</th>
+              <th scope="col">Count</th>
+            </thead>
+            <tbody id="ranking-table"></tbody>
+          </table>
+        </div>
       </div>
-      <p style="font-size: 40px"><img id="char-avatar" style="height: 50px; margin: 5px" /><a href="" id="name" target="_blank">Loading</a></p>
-      <div class="input-group" style="width: 65%">
-        <input id="manual-rating" type="number" class="form-control" value="0" style="width: 50px" />
-        <button class="form-control btn btn-primary" onclick="scoreManual();" style="width: 70px">Manual</button>
-        <button class="form-control btn btn-primary" onclick="skip();" style="width: 50px">Skip</button>
-        <button class="form-control btn btn-danger" onclick="score(-16);">-5</button>
-        <button class="form-control btn btn-danger" onclick="score(-8);">-4</button>
-        <button class="form-control btn btn-danger" onclick="score(-4);">-3</button>
-        <button class="form-control btn btn-danger" onclick="score(-2);">-2</button>
-        <button class="form-control btn btn-danger" onclick="score(-1);">-1</button>
-        <button class="form-control btn btn-warning" onclick="score(0);">0</button>
-        <button class="form-control btn btn-success" onclick="score(1);">1</button>
-        <button class="form-control btn btn-success" onclick="score(2);">2</button>
-        <button class="form-control btn btn-success" onclick="score(4);">3</button>
-        <button class="form-control btn btn-success" onclick="score(8);">4</button>
-        <button class="form-control btn btn-success" onclick="score(16);">5</button>
-      </div>
-      <br />
-      <img id="char-image" style="height: 500px; width: 65%; object-fit: contain; object-position: top left" />
     </div>
   </body>
   <script src="assets/js/main.js"></script>

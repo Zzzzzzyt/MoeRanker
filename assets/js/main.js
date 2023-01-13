@@ -28,9 +28,9 @@ function refresh() {
   var nameElement = document.getElementById("name");
   nameElement.innerText = char.page;
   nameElement.href = "https://zh.moegirl.org.cn" + char.url;
-  var src = "assets/images/" + moegirl_to_bgm[char.page];
-  document.getElementById("char-image").setAttribute("src", src + "-large.jpg");
-  document.getElementById("char-avatar").setAttribute("src", src + "-avatar.jpg");
+  var id = moegirl_to_bgm[char.page];
+  // document.getElementById("char-avatar").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=small`);
+  document.getElementById("char-image").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=large`);
 }
 
 function scoreManual() {
