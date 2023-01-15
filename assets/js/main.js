@@ -1,14 +1,23 @@
 const subsets = [
-  { name: "*", display: "全部" },
-  { name: "bgm200_subset", display: "Bangumi top 200" },
-  { name: "bgm2000_subset", display: "Bangumi top 2000" },
-  { name: "kyoani_subset", display: "京阿尼合集" },
-  { name: "touhou_subset", display: "东方project合集" },
-  { name: "toaru_subset", display: "魔禁世界观(含超炮)合集" },
+  { name: "*", display: "全部", checked: false },
+  { name: "bgm200_subset", display: "Bangumi top 200", checked: true },
+  { name: "bgm2000_subset", display: "Bangumi top 2000", checked: false },
+  { name: "bgm20000_subset", display: "Bangumi top 20000", checked: false },
+  { name: "kyoani_subset", display: "京阿尼合集", checked: false },
+  { name: "touhou_subset", display: "东方project", checked: false },
+  { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false },
+  { name: "arknights_subset", display: "明日方舟", checked: false },
+  { name: "genshin_subset", display: "原神", checked: false },
+  { name: "fate_subset", display: "Fate系列", checked: false },
+  { name: "jojo_subset", display: "JOJO系列", checked: false },
+  { name: "gundam_subset", display: "高达系列", checked: false },
+  { name: "naruto_subset", display: "火影忍者", checked: false },
 ];
 
 var currentId = 0;
 var currentSubset = [];
+var current = [];
+var dedupe = true;
 
 var char_index, attr_index, char2attr;
 var moegirl2bgm;
@@ -20,12 +29,12 @@ var fetchMain = fetch("data/data_min.json")
   .then((data) => {
     ({ char_index, attr_index, char2attr } = data);
     for (var i = 0; i < char_index.length; i++) {
-      char2id.set(char_index[i].page, i);
+      char2id.set(char_index[i].name, i);
     }
     console.log(`main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`);
-    var weight = new Array(attr_index.length);
+    weight = new Array(attr_index.length);
     weight.fill(0);
-    var count = new Array(attr_index.length);
+    count = new Array(attr_index.length);
     count.fill(0);
   });
 
@@ -60,12 +69,17 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchMap]).then(() => {
   refresh();
 });
 
+function name2url(name) {
+  return name.replace(" ", "_");
+}
+
 function displaySubsets() {
   const allSubset = [];
   for (var i = 0; i < char_index.length; i++) {
     allSubset.push(i);
   }
   currentSubset = allSubset;
+  current = allSubset;
   subsets[0].subset = allSubset;
   for (var i = 1; i < subsets.length; i++) {
     var tmpSet = new Set();
@@ -83,31 +97,54 @@ function displaySubsets() {
   var tmpHtml = "";
   for (var i = 0; i < subsets.length; i++) {
     tmpHtml += `<div class="form-check">
-    <input class="form-check-input" type="checkbox" id="subset-${i}" ${i == 0 ? "checked" : ""} />
+    <input class="form-check-input" type="checkbox" id="subset-${i}" onclick="updateSubset();" ${subsets[i].checked ? "checked" : ""} />
     <label class="form-check-label" for="flexCheckDefault"> ${subsets[i].display} (${subsets[i].subset.length}) </label>
     </div>`;
   }
   const div = document.getElementById("subset-div");
   div.innerHTML = tmpHtml + div.innerHTML;
+  updateSubset();
 }
 
 function refresh() {
-  const i = getRandomInt(0, currentSubset.length);
-  currentId = currentSubset[i];
+  if (current.length == 0) {
+    const nameElement = document.getElementById("name");
+    nameElement.innerText = "已完全遍历";
+    nameElement.href = "";
+    document.getElementById("char-image").setAttribute("src", "");
+  }
+
+  const i = getRandomInt(0, current.length);
+  currentId = current[i];
+  current.splice(i, 1);
   const char = char_index[currentId];
   const nameElement = document.getElementById("name");
-  nameElement.innerText = char.page;
-  nameElement.href = "https://zh.moegirl.org.cn" + char.url;
-  const id = moegirl2bgm[char.page];
+  nameElement.innerText = char.name;
+  nameElement.href = "https://zh.moegirl.org.cn/" + name2url(char.name);
+
+  const ids = moegirl2bgm[char.name];
+  var tmp = "";
+  if (ids !== undefined) {
+    for (var j of ids) {
+      tmp += `<a id="bangumi-link" href="https://bgm.tv/character/${j}" target="_blank">
+      <img src="https://api.bgm.tv/v0/characters/${j}/image?type=medium" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+    }
+  }
+  else{
+    tmp += `<a id="bangumi-link" href="https://bgm.tv/character/13004" target="_blank">
+      <img src="/assets/img/akarin.jpg" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+  }
+  document.getElementById("images").innerHTML = tmp;
   // document.getElementById("char-avatar").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=small`);
-  document.getElementById("char-image").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=large`);
+  // document.getElementById("char-image").src = `https://api.bgm.tv/v0/characters/${id}/image?type=large`;
+  // document.getElementById("bangumi-link").href = `https://bgm.tv/character/${id}`;
 }
 
-function generateSubset() {
+function updateSubset() {
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
-    const checked = document.getElementById(`subset-${i}`).checked;
-    if (checked) {
+    subsets[i].checked = document.getElementById(`subset-${i}`).checked;
+    if (subsets[i].checked) {
       for (var j of subsets[i].subset) {
         tmpSet.add(j);
       }
@@ -117,8 +154,22 @@ function generateSubset() {
   tmpSet.forEach((val) => {
     currentSubset.push(val);
   });
+  current = Array.from(currentSubset);
   console.log(`new subset generated: length=${currentSubset.length}`);
   refresh();
+}
+
+function resetDedupe() {
+  current = Array.from(currentSubset);
+  refresh();
+}
+
+function toggleDedupe() {
+  var newval = document.getElementById("toggle-dedupe").checked;
+  if (newval) {
+    resetDedupe();
+  }
+  dedupe = newval;
 }
 
 function scoreManual() {
@@ -126,7 +177,7 @@ function scoreManual() {
 }
 
 function score(val) {
-  console.log(`score ${val} for ${char_index[currentId].page}`);
+  console.log(`score ${val} for ${char_index[currentId].name}`);
   for (var i of char2attr[currentId]) {
     weight[i] += val;
     count[i]++;
@@ -158,7 +209,7 @@ function compute() {
     attr = attr_index[result[i].attr];
     var href = "";
     if (attr.article !== undefined) {
-      href = ` href="https://zh.moegirl.org.cn${attr.article.url}"`;
+      href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
     }
     const name = `<a${href} target="_blank">${attr.name}</a>`;
     tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating}</td><td>${count[result[i].attr]}</td></tr>`;

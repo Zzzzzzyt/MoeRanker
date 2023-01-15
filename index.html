@@ -43,11 +43,18 @@
           <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(8);">4</button>
           <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(16);">5</button>
           <br />
-          <img id="char-image" style="width: 100%; max-width: 600px; height: 500px; object-fit: contain; object-position: top left" />
+          <div id="images" style="width: 100%; max-width: 600px; min-height: 500px; display: flex; flex-wrap: wrap"></div>
         </div>
-        <div style="flex-grow: 1; padding: 10px" id="subset-div">
+        <div style="flex-grow: 1; padding: 10px">
+          <div id="subset-div"></div>
           <br />
-          <button class="btn btn-primary" style="width: fit-content" onclick="generateSubset();">生成子集</button>
+          <div class="input-group">
+            <div class="input-group-text">
+              <input id="toggle-dedupe" type="checkbox" class="form-check-input mt-0" onclick="toggleDedupe();" checked />
+              <span>&nbsp;不重复</span>
+            </div>
+            <button class="form-control btn btn-primary" onclick="resetDedupe();">重置</button>
+          </div>
         </div>
         <div style="width: 25%; min-width: 250px; padding: 10px">
           <table class="table table-bordered">
