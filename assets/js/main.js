@@ -4,7 +4,8 @@ const subsets = [
   { name: "bgm2000_subset", display: "Bangumi top 2000", checked: false },
   { name: "bgm20000_subset", display: "Bangumi top 20000", checked: false },
   { name: "kyoani_subset", display: "京阿尼合集", checked: false },
-  { name: "touhou_subset", display: "东方project", checked: false },
+  { name: "touhou_new_subset", display: "东方project新作", checked: false },
+  { name: "touhou_old_subset", display: "东方project旧作", checked: false },
   { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false },
   { name: "arknights_subset", display: "明日方舟", checked: false },
   { name: "genshin_subset", display: "原神", checked: false },
@@ -12,6 +13,7 @@ const subsets = [
   { name: "jojo_subset", display: "JOJO系列", checked: false },
   { name: "gundam_subset", display: "高达系列", checked: false },
   { name: "naruto_subset", display: "火影忍者", checked: false },
+  { name: "zzzyt_subset", display: "Zzzyt私货(测试用)", checked: false },
 ];
 
 var currentId = 0;
@@ -96,9 +98,13 @@ function displaySubsets() {
   }
   var tmpHtml = "";
   for (var i = 0; i < subsets.length; i++) {
+    var cnt = 0;
+    for (var j of subsets[i].subset) {
+      if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
+    }
     tmpHtml += `<div class="form-check">
     <input class="form-check-input" type="checkbox" id="subset-${i}" onclick="updateSubset();" ${subsets[i].checked ? "checked" : ""} />
-    <label class="form-check-label" for="flexCheckDefault"> ${subsets[i].display} (${subsets[i].subset.length}) </label>
+    <label class="form-check-label" for="flexCheckDefault"> ${subsets[i].display} (${cnt}/${subsets[i].subset.length}) </label>
     </div>`;
   }
   const div = document.getElementById("subset-div");
@@ -129,8 +135,7 @@ function refresh() {
       tmp += `<a id="bangumi-link" href="https://bgm.tv/character/${j}" target="_blank">
       <img src="https://api.bgm.tv/v0/characters/${j}/image?type=medium" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
-  }
-  else{
+  } else {
     tmp += `<a id="bangumi-link" href="https://bgm.tv/character/13004" target="_blank">
       <img src="/assets/img/akarin.jpg" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
