@@ -137,7 +137,7 @@ function refresh() {
     }
   } else {
     tmp += `<a id="bangumi-link" href="https://bgm.tv/character/13004" target="_blank">
-      <img src="/assets/img/akarin.jpg" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+      <img src="assets/img/akarin.jpg" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
   document.getElementById("images").innerHTML = tmp;
   // document.getElementById("char-avatar").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=small`);
