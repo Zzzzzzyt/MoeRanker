@@ -113,17 +113,20 @@ function displaySubsets() {
   updateSubset();
 }
 
-function refresh(i, dodedupe) {
+function refresh(id, dodedupe) {
   if (current.length == 0) {
     const nameElement = document.getElementById("name");
     nameElement.innerText = "已完全遍历";
     nameElement.href = "";
     document.getElementById("char-image").setAttribute("src", "");
   }
-  if (i === undefined) {
+  if (id === undefined) {
     i = getRandomInt(0, current.length);
+    currentId = current[i];
+  } else {
+    currentId = id;
   }
-  currentId = current[i];
+
   if (dodedupe === undefined) {
     dodedupe = dedupe;
   }
