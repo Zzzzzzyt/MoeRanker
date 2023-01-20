@@ -194,11 +194,11 @@ function score(val) {
   rating_history.push({ id: currentId, score: val });
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[currentId].has(i)) {
-      stat[currentId].test.push(val);
-      stat[currentId].test_sum += val;
+      stat[i].test.push(val);
+      stat[i].test_sum += val;
     } else {
-      stat[currentId].control.push(val);
-      stat[currentId].control_sum += val;
+      stat[i].control.push(val);
+      stat[i].control_sum += val;
     }
   }
   // console.log(weight, count);
