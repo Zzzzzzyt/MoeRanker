@@ -27,9 +27,8 @@
             <a href="https://zh.moegirl.org.cn/不要停下来啊！" id="name" target="_blank">加载中</a>
           </p>
           <div class="input-group" style="max-width: 250px">
-            <input id="manual-rating" type="number" class="form-control" value="0" />
-            <button class="form-control btn btn-primary" onclick="scoreManual();">手动</button>
             <button class="form-control btn btn-primary" onclick="skip();">跳过</button>
+            <button class="form-control btn btn-primary" onclick="revert();">撤销</button>
           </div>
           <br />
           <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-16);">-5</button>
@@ -54,7 +53,7 @@
               <input id="toggle-dedupe" type="checkbox" class="form-check-input mt-0" onclick="toggleDedupe();" checked />
               <span>&nbsp;不重复</span>
             </div>
-            <button class="form-control btn btn-primary" onclick="resetDedupe();">重置</button>
+            <button class="form-control btn btn-primary" onclick="reset();">重置</button>
           </div>
         </div>
         <div style="width: 25%; min-width: 250px; padding: 10px">

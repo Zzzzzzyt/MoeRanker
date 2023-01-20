@@ -24,7 +24,8 @@ var dedupe = true;
 var char_index, attr_index, char2attr;
 var moegirl2bgm;
 var char2id = new Map();
-var weight, count;
+var history = [];
+var stat = [];
 
 var fetchMain = fetch("data/data_min.json")
   .then((response) => response.json())
@@ -32,12 +33,10 @@ var fetchMain = fetch("data/data_min.json")
     ({ char_index, attr_index, char2attr } = data);
     for (var i = 0; i < char_index.length; i++) {
       char2id.set(char_index[i].name, i);
+      stat.push({ test: [], control: [] });
+      char2attr[i] = new Map(char2attr[i]);
     }
     console.log(`main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`);
-    weight = new Array(attr_index.length);
-    weight.fill(0);
-    count = new Array(attr_index.length);
-    count.fill(0);
   });
 
 var fetchMap = fetch("data/moegirl2bgm.json")
@@ -112,17 +111,23 @@ function displaySubsets() {
   updateSubset();
 }
 
-function refresh() {
+function refresh(i, dodedupe) {
   if (current.length == 0) {
     const nameElement = document.getElementById("name");
     nameElement.innerText = "已完全遍历";
     nameElement.href = "";
     document.getElementById("char-image").setAttribute("src", "");
   }
-
-  const i = getRandomInt(0, current.length);
+  if (i === undefined) {
+    i = getRandomInt(0, current.length);
+  }
   currentId = current[i];
-  current.splice(i, 1);
+  if (dodedupe === undefined) {
+    dodedupe = dedupe;
+  }
+  if (dodedupe) {
+    current.splice(i, 1);
+  }
   const char = char_index[currentId];
   const nameElement = document.getElementById("name");
   nameElement.innerText = char.name;
@@ -164,28 +169,29 @@ function updateSubset() {
   refresh();
 }
 
-function resetDedupe() {
+function reset() {
   current = Array.from(currentSubset);
+  history = [];
   refresh();
 }
 
 function toggleDedupe() {
   var newval = document.getElementById("toggle-dedupe").checked;
   if (newval) {
-    resetDedupe();
+    reset();
   }
   dedupe = newval;
 }
 
-function scoreManual() {
-  score(Number.parseInt(document.getElementById("manual-rating").value));
-}
-
 function score(val) {
   console.log(`score ${val} for ${char_index[currentId].name}`);
-  for (var i of char2attr[currentId]) {
-    weight[i] += val;
-    count[i]++;
+  history.push({ id: currentId, score: val });
+  for (var i = 0; i < attr_index.length; i++) {
+    if (char2attr[currentId].has(i)) {
+      stat[currentId].test.push(score);
+    } else {
+      stat[currentId].control.push(score);
+    }
   }
   // console.log(weight, count);
   compute();
@@ -196,20 +202,40 @@ function skip() {
   refresh();
 }
 
-function compute() {
-  var result = [];
+function revert() {
+  if (history.length == 0) {
+    return;
+  }
+  var { id, score } = history.pop();
   for (var i = 0; i < attr_index.length; i++) {
-    if (count[i] === 0) continue;
-    const rating = weight[i] * count[i];
-    result.push({ rating: rating, attr: i });
+    if (char2attr[id].has(i)) {
+      stat[id].test.pop();
+    } else {
+      stat[id].control.pop();
+    }
+  }
+  refresh(id);
+}
+
+function average(arr) {
+  var sum = 0;
+  for (var i of arr) {
+    sum += i;
+  }
+  return sum / arr.length;
+}
+
+function compute() {
+  var tmp = "";
+  const result = [];
+  for (var i = 0; i < attr_index.length; i++) {
+    at = average(stat[i].test);
+    ac = average(stat[i].control);
+    result.push({ attr: i, rating: at - ac, count: stat[i].test.length });
   }
   result.sort((a, b) => {
-    if (b.rating !== a.rating) return b.rating - a.rating;
-    return count[b.attr] - count[a.attr];
+    return b - a;
   });
-  console.log(result);
-
-  var tmp = "";
   for (var i = 0; i < result.length; i++) {
     attr = attr_index[result[i].attr];
     var href = "";
@@ -217,7 +243,7 @@ function compute() {
       href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
     }
     const name = `<a${href} target="_blank">${attr.name}</a>`;
-    tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating}</td><td>${count[result[i].attr]}</td></tr>`;
+    tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating}</td><td>${result[i].count}</td></tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
 }
