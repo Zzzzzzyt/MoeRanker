@@ -217,11 +217,11 @@ function revert() {
   const { id, score } = rating_history.pop();
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[id].has(i)) {
-      stat[id].test.pop();
-      stat[id].test_sum -= score;
+      stat[i].test.pop();
+      stat[i].test_sum -= score;
     } else {
-      stat[id].control.pop();
-      stat[id].control_sum -= score;
+      stat[i].control.pop();
+      stat[i].control_sum -= score;
     }
   }
   refresh(id);
