@@ -34,7 +34,7 @@ var fetchMain = fetch("data/data_min.json")
     for (var i = 0; i < char_index.length; i++) {
       char2id.set(char_index[i].name, i);
       stat.push({ test: [], control: [] });
-      char2attr[i] = new Map(char2attr[i]);
+      char2attr[i] = new Set(char2attr[i]);
     }
     console.log(`main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`);
   });
