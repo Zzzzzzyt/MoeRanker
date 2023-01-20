@@ -178,6 +178,7 @@ function reset() {
   for (var i = 0; i < attr_index.length; i++) {
     stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
   }
+  document.getElementById("ranking-table").innerHTML = "";
   refresh();
 }
 
@@ -201,7 +202,6 @@ function score(val) {
       stat[i].control_sum += val;
     }
   }
-  // console.log(weight, count);
   compute();
   refresh();
 }
@@ -215,6 +215,7 @@ function revert() {
     return;
   }
   const { id, score } = rating_history.pop();
+  console.log(`revert ${score} for ${char_index[id].name}`);
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[id].has(i)) {
       stat[i].test.pop();
@@ -224,7 +225,8 @@ function revert() {
       stat[i].control_sum -= score;
     }
   }
-  refresh(id);
+  current.push(id);
+  refresh(id, false);
 }
 
 function compute() {
@@ -247,7 +249,7 @@ function compute() {
       href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
     }
     const name = `<a${href} target="_blank">${attr.name}</a>`;
-    tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating}</td><td>${result[i].count}</td></tr>`;
+    tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td><td>${result[i].count}</td></tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
 }
