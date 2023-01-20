@@ -24,7 +24,7 @@ var dedupe = true;
 var char_index, attr_index, char2attr;
 var moegirl2bgm;
 var char2id = new Map();
-var history = [];
+var rating_history = [];
 var stat = [];
 
 var fetchMain = fetch("data/data_min.json")
@@ -171,7 +171,7 @@ function updateSubset() {
 
 function reset() {
   current = Array.from(currentSubset);
-  history = [];
+  rating_history = [];
   refresh();
 }
 
@@ -185,7 +185,7 @@ function toggleDedupe() {
 
 function score(val) {
   console.log(`score ${val} for ${char_index[currentId].name}`);
-  history.push({ id: currentId, score: val });
+  rating_history.push({ id: currentId, score: val });
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[currentId].has(i)) {
       stat[currentId].test.push(score);
@@ -203,10 +203,10 @@ function skip() {
 }
 
 function revert() {
-  if (history.length == 0) {
+  if (rating_history.length == 0) {
     return;
   }
-  var { id, score } = history.pop();
+  var { id, score } = rating_history.pop();
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[id].has(i)) {
       stat[id].test.pop();
