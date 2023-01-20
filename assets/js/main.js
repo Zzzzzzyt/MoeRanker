@@ -33,8 +33,10 @@ var fetchMain = fetch("data/data_min.json")
     ({ char_index, attr_index, char2attr } = data);
     for (var i = 0; i < char_index.length; i++) {
       char2id.set(char_index[i].name, i);
-      stat.push({ test: [], control: [] });
       char2attr[i] = new Set(char2attr[i]);
+    }
+    for (var i = 0; i < attr_index.length; i++) {
+      stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
     }
     console.log(`main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`);
   });
@@ -172,6 +174,10 @@ function updateSubset() {
 function reset() {
   current = Array.from(currentSubset);
   rating_history = [];
+  stat = [];
+  for (var i = 0; i < attr_index.length; i++) {
+    stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
+  }
   refresh();
 }
 
@@ -188,9 +194,11 @@ function score(val) {
   rating_history.push({ id: currentId, score: val });
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[currentId].has(i)) {
-      stat[currentId].test.push(score);
+      stat[currentId].test.push(val);
+      stat[currentId].test_sum += val;
     } else {
-      stat[currentId].control.push(score);
+      stat[currentId].control.push(val);
+      stat[currentId].control_sum += val;
     }
   }
   // console.log(weight, count);
@@ -206,31 +214,26 @@ function revert() {
   if (rating_history.length == 0) {
     return;
   }
-  var { id, score } = rating_history.pop();
+  const { id, score } = rating_history.pop();
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[id].has(i)) {
       stat[id].test.pop();
+      stat[id].test_sum -= score;
     } else {
       stat[id].control.pop();
+      stat[id].control_sum -= score;
     }
   }
   refresh(id);
-}
-
-function average(arr) {
-  var sum = 0;
-  for (var i of arr) {
-    sum += i;
-  }
-  return sum / arr.length;
 }
 
 function compute() {
   var tmp = "";
   const result = [];
   for (var i = 0; i < attr_index.length; i++) {
-    at = average(stat[i].test);
-    ac = average(stat[i].control);
+    if (stat[i].test.length === 0 || stat[i].control.length === 0) continue;
+    const at = stat[i].test_sum / stat[i].test.length;
+    const ac = stat[i].control_sum / stat[i].control.length;
     result.push({ attr: i, rating: at - ac, count: stat[i].test.length });
   }
   result.sort((a, b) => {
