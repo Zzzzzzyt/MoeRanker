@@ -237,7 +237,8 @@ function compute() {
     result.push({ attr: i, rating: at - ac, count: stat[i].test.length });
   }
   result.sort((a, b) => {
-    return b.rating - a.rating;
+    if (b.rating === a.rating) return b.rating - a.rating;
+    return b.attr - a.attr;
   });
   for (var i = 0; i < result.length; i++) {
     attr = attr_index[result[i].attr];
