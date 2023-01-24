@@ -88,7 +88,9 @@ function displaySubsets() {
     var tmpSet = new Set();
     for (var j = 0; j < subsets[i].subset.length; j++) {
       const id = char2id.get(subsets[i].subset[j]);
-      if (id === undefined) continue;
+      if (id === undefined) {
+        continue;
+      }
       tmpSet.add(id);
     }
     const tmpSubset = [];
