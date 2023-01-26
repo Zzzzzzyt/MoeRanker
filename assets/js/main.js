@@ -131,6 +131,25 @@ function refresh(id) {
   nameElement.innerText = char.name;
   nameElement.href = "https://zh.moegirl.org.cn/" + name2url(char.name);
 
+  const oldPreload = document.head.getElementsByClassName("char-image-preloader");
+  for (i of oldPreload) {
+    i.remove();
+  }
+  for (var i = currentIndex - 2; i <= currentIndex + 5; i++) {
+    if (i < 0 || i >= currentSubset.length) continue;
+    const mid = currentSubset[i];
+    const ids = moegirl2bgm[char_index[mid].name];
+    if (ids === undefined) continue;
+    for (var j of ids) {
+      const preloadLink = document.createElement("link");
+      preloadLink.href = `https://api.bgm.tv/v0/characters/${j}/image?type=medium`;
+      preloadLink.rel = "preload";
+      preloadLink.as = "image";
+      preloadLink.class = "char-image-preloader";
+      document.head.appendChild(preloadLink);
+    }
+  }
+
   const ids = moegirl2bgm[char.name];
   var tmp = "";
   if (ids !== undefined) {
