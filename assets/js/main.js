@@ -13,6 +13,8 @@ const subsets = [
   { name: "jojo_subset", display: "JOJO系列", checked: false },
   { name: "gundam_subset", display: "高达系列", checked: false },
   { name: "naruto_subset", display: "火影忍者", checked: false },
+  { name: "furry_subset", display: "兽娘属性", checked: false },
+  { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
   { name: "zzzyt_subset", display: "Zzzyt私货(测试用)", checked: false },
 ];
 
