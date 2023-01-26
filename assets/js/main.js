@@ -79,8 +79,7 @@ function displaySubsets() {
   for (var i = 0; i < char_index.length; i++) {
     allSubset.push(i);
   }
-  currentSubset = shuffle(allSubset);
-  current = allSubset;
+  currentSubset = allSubset;
   subsets[0].subset = allSubset;
   for (var i = 1; i < subsets.length; i++) {
     var tmpSet = new Set();
@@ -240,7 +239,6 @@ function revert() {
       }
     }
   }
-  current.push(id);
   compute();
   refresh(id);
   currentIndex--;
@@ -259,6 +257,7 @@ function compute() {
     if (b.rating !== a.rating) return b.rating - a.rating;
     return b.attr - a.attr;
   });
+  var cnt = 0;
   for (var i = 0; i < result.length; i++) {
     if (result[i].count <= 2) continue;
     attr = attr_index[result[i].attr];
@@ -267,7 +266,8 @@ function compute() {
       href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
     }
     const name = `<a${href} target="_blank">${attr.name}</a>`;
-    tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td><td>${result[i].count}</td></tr>`;
+    cnt++;
+    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td><td>${result[i].count}</td></tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
 }
