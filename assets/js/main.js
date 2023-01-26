@@ -16,10 +16,8 @@ const subsets = [
   { name: "zzzyt_subset", display: "Zzzyt私货(测试用)", checked: false },
 ];
 
-var currentId = 0;
+var currentIndex = 0;
 var currentSubset = [];
-var current = [];
-var dedupe = true;
 
 var char_index, attr_index, char2attr;
 var moegirl2bgm;
@@ -81,7 +79,7 @@ function displaySubsets() {
   for (var i = 0; i < char_index.length; i++) {
     allSubset.push(i);
   }
-  currentSubset = allSubset;
+  currentSubset = shuffle(allSubset);
   current = allSubset;
   subsets[0].subset = allSubset;
   for (var i = 1; i < subsets.length; i++) {
@@ -106,36 +104,29 @@ function displaySubsets() {
       if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
     }
     tmpHtml += `<div class="form-check">
-    <input class="form-check-input" type="checkbox" id="subset-${i}" onclick="updateSubset();" ${subsets[i].checked ? "checked" : ""} />
+    <input class="form-check-input" type="checkbox" id="subset-${i}" ${subsets[i].checked ? "checked" : ""} />
     <label class="form-check-label" for="flexCheckDefault"> ${subsets[i].display} (${cnt}/${subsets[i].subset.length}) </label>
     </div>`;
   }
   const div = document.getElementById("subset-div");
   div.innerHTML = tmpHtml + div.innerHTML;
-  updateSubset();
+  reset();
 }
 
-function refresh(id, dodedupe) {
-  if (current.length == 0) {
+function refresh(id) {
+  if (currentIndex >= currentSubset.length) {
     const nameElement = document.getElementById("name");
     nameElement.innerText = "已完全遍历";
-    nameElement.href = "";
-    document.getElementById("char-image").setAttribute("src", "");
+    nameElement.href = "https://www.bilibili.com/bangumi/play/ep29854?t=1292";
+    document.getElementById("images").innerHTML = `<a id="bangumi-link" href="https://bgm.tv/character/302" target="_blank">
+    <img src="assets/img/omedetou.gif" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+    return;
   }
   if (id === undefined) {
-    i = getRandomInt(0, current.length);
-    currentId = current[i];
-  } else {
-    currentId = id;
+    id = currentSubset[currentIndex];
   }
 
-  if (dodedupe === undefined) {
-    dodedupe = dedupe;
-  }
-  if (dodedupe) {
-    current.splice(i, 1);
-  }
-  const char = char_index[currentId];
+  const char = char_index[id];
   const nameElement = document.getElementById("name");
   nameElement.innerText = char.name;
   nameElement.href = "https://zh.moegirl.org.cn/" + name2url(char.name);
@@ -157,7 +148,7 @@ function refresh(id, dodedupe) {
   // document.getElementById("bangumi-link").href = `https://bgm.tv/character/${id}`;
 }
 
-function updateSubset() {
+function reset() {
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
     subsets[i].checked = document.getElementById(`subset-${i}`).checked;
@@ -167,17 +158,17 @@ function updateSubset() {
       }
     }
   }
+  forceMapping = document.getElementById("force-mapping").checked;
   currentSubset = [];
   tmpSet.forEach((val) => {
+    if (forceMapping && moegirl2bgm[char_index[val].name] === undefined) {
+      return;
+    }
     currentSubset.push(val);
   });
-  current = Array.from(currentSubset);
+  currentSubset = shuffle(currentSubset);
+  currentIndex = 0;
   console.log(`new subset generated: length=${currentSubset.length}`);
-  refresh();
-}
-
-function reset() {
-  current = Array.from(currentSubset);
   rating_history = [];
   stat = [];
   for (var i = 0; i < attr_index.length; i++) {
@@ -187,19 +178,12 @@ function reset() {
   refresh();
 }
 
-function toggleDedupe() {
-  var newval = document.getElementById("toggle-dedupe").checked;
-  if (newval) {
-    reset();
-  }
-  dedupe = newval;
-}
-
 function score(val) {
-  console.log(`score ${val} for ${char_index[currentId].name}`);
-  rating_history.push({ id: currentId, score: val });
+  id = currentSubset[currentIndex];
+  console.log(`score ${val} for ${char_index[id].name}`);
+  rating_history.push({ id: id, score: val });
   for (var i = 0; i < attr_index.length; i++) {
-    if (char2attr[currentId].has(i)) {
+    if (char2attr[id].has(i)) {
       stat[i].test.push(val);
       stat[i].test_sum += val;
     } else {
@@ -208,10 +192,14 @@ function score(val) {
     }
   }
   compute();
+  currentIndex++;
   refresh();
 }
 
 function skip() {
+  id = currentSubset[currentIndex];
+  rating_history.push({ id: id, score: undefined });
+  currentIndex++;
   refresh();
 }
 
@@ -219,19 +207,24 @@ function revert() {
   if (rating_history.length == 0) {
     return;
   }
+  console.log(rating_history);
   const { id, score } = rating_history.pop();
   console.log(`revert ${score} for ${char_index[id].name}`);
-  for (var i = 0; i < attr_index.length; i++) {
-    if (char2attr[id].has(i)) {
-      stat[i].test.pop();
-      stat[i].test_sum -= score;
-    } else {
-      stat[i].control.pop();
-      stat[i].control_sum -= score;
+  if (score !== undefined) {
+    for (var i = 0; i < attr_index.length; i++) {
+      if (char2attr[id].has(i)) {
+        stat[i].test.pop();
+        stat[i].test_sum -= score;
+      } else {
+        stat[i].control.pop();
+        stat[i].control_sum -= score;
+      }
     }
   }
   current.push(id);
-  refresh(id, false);
+  compute();
+  refresh(id);
+  currentIndex--;
 }
 
 function compute() {
@@ -248,6 +241,7 @@ function compute() {
     return b.attr - a.attr;
   });
   for (var i = 0; i < result.length; i++) {
+    if (result[i].count <= 2) continue;
     attr = attr_index[result[i].attr];
     var href = "";
     if (attr.article !== undefined) {
@@ -257,6 +251,18 @@ function compute() {
     tmp += `<tr><th scope="row">${i + 1}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td><td>${result[i].count}</td></tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
+}
+
+function shuffle(array) {
+  let currentIndex = array.length,
+    randomIndex;
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
 }
 
 function getRandomInt(min, max) {

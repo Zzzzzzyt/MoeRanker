@@ -27,8 +27,8 @@
             <a href="https://zh.moegirl.org.cn/不要停下来啊！" id="name" target="_blank">加载中</a>
           </p>
           <div class="input-group" style="max-width: 250px">
-            <button class="form-control btn btn-primary" onclick="skip();">跳过</button>
             <button class="form-control btn btn-primary" onclick="revert();">撤销</button>
+            <button class="form-control btn btn-primary" onclick="skip();">跳过</button>
           </div>
           <br />
           <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-16);">-5</button>
@@ -50,10 +50,10 @@
           <br />
           <div class="input-group">
             <div class="input-group-text">
-              <input id="toggle-dedupe" type="checkbox" class="form-check-input mt-0" onclick="toggleDedupe();" checked />
-              <span>&nbsp;不重复</span>
+              <input id="force-mapping" type="checkbox" class="form-check-input mt-0" />
+              <span>&nbsp;必须有图像映射</span>
             </div>
-            <button class="form-control btn btn-primary" onclick="reset();">重置</button>
+            <button class="form-control btn btn-primary" onclick="reset();">生成子集</button>
           </div>
         </div>
         <div style="width: 25%; min-width: 250px; padding: 10px">
@@ -61,7 +61,7 @@
             <thead>
               <th scope="col">#</th>
               <th scope="col">属性</th>
-              <th scope="col">评分</th>
+              <th scope="col">偏差</th>
               <th scope="col">计数</th>
             </thead>
             <tbody id="ranking-table"></tbody>
