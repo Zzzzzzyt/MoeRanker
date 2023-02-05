@@ -24,7 +24,7 @@ var currentSubset = [];
 var char_index, attr_index, char2attr;
 var moegirl2bgm;
 var char2id = new Map();
-var rating_history = [];
+var ratingHistory = [];
 var stat = [];
 
 var fetchMain = fetch("data/data_min.json")
@@ -189,7 +189,7 @@ function reset() {
   currentSubset = shuffle(currentSubset);
   currentIndex = 0;
   console.log(`new subset generated: length=${currentSubset.length}`);
-  rating_history = [];
+  ratingHistory = [];
   stat = [];
   for (var i = 0; i < attr_index.length; i++) {
     stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
@@ -201,7 +201,7 @@ function reset() {
 function score(val) {
   id = currentSubset[currentIndex];
   console.log(`score ${val} for ${char_index[id].name}`);
-  rating_history.push({ id: id, score: val });
+  ratingHistory.push({ id: id, score: val });
   for (var i = 0; i < attr_index.length; i++) {
     if (char2attr[id].has(i)) {
       stat[i].test.push(val);
@@ -218,17 +218,17 @@ function score(val) {
 
 function skip() {
   id = currentSubset[currentIndex];
-  rating_history.push({ id: id, score: undefined });
+  ratingHistory.push({ id: id, score: undefined });
   currentIndex++;
   refresh();
 }
 
 function revert() {
-  if (rating_history.length == 0) {
+  if (ratingHistory.length == 0) {
     return;
   }
-  console.log(rating_history);
-  const { id, score } = rating_history.pop();
+  console.log(ratingHistory);
+  const { id, score } = ratingHistory.pop();
   console.log(`revert ${score} for ${char_index[id].name}`);
   if (score !== undefined) {
     for (var i = 0; i < attr_index.length; i++) {
@@ -247,17 +247,39 @@ function revert() {
 }
 
 function compute() {
+  const t = Date.now();
   var tmp = "";
   const result = [];
   for (var i = 0; i < attr_index.length; i++) {
-    if (stat[i].test.length === 0 || stat[i].control.length === 0) continue;
-    const at = stat[i].test_sum / stat[i].test.length;
-    const ac = stat[i].control_sum / stat[i].control.length;
-    result.push({ attr: i, rating: at - ac, count: stat[i].test.length });
+    const test = stat[i].test;
+    const control = stat[i].control;
+    if (test.length === 0 || control.length === 0) continue;
+    const avg1 = stat[i].test_sum / test.length;
+    const avg2 = stat[i].control_sum / control.length;
+    // const [avg1, std1] = normalDist(test);
+    // const [avg2, std2] = normalDist(control);
+    const delta = avg1 - avg2;
+    const countFactor = Math.min(1.8, Math.max(0, Math.log((test.length * control.length) / (test.length + control.length) / 2 + 1) - 0.6));
+    // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
+    const rating = delta * countFactor;
+    result.push({
+      attr: i,
+      rating: rating,
+      extra: {
+        avg1: avg1,
+        // std1: std1,
+        n1: test.length,
+        avg2: avg2,
+        // std2: std2,
+        n2: control.length,
+        delta: delta,
+        countFactor: countFactor,
+        // stdFactor: stdFactor,
+      },
+    });
   }
   result.sort((a, b) => {
-    if (b.rating !== a.rating) return b.rating - a.rating;
-    return b.attr - a.attr;
+    return b.rating - a.rating;
   });
   var cnt = 0;
   for (var i = 0; i < result.length; i++) {
@@ -267,11 +289,33 @@ function compute() {
     if (attr.article !== undefined) {
       href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
     }
+    if (Math.abs(result[i].rating) < 0.05) continue;
     const name = `<a${href} target="_blank">${attr.name}</a>`;
     cnt++;
-    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td><td>${result[i].count}</td></tr>`;
+    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td>
+    <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1.toFixed(2)}</td>
+    <td>${result[i].extra.avg2.toFixed(2)} / ${result[i].extra.n2.toFixed(2)}</td>
+    <td>${result[i].extra.delta.toFixed(2)}</td>
+    <td>${result[i].extra.countFactor.toFixed(2)}</td>
+    </tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
+  lastCompute = -1;
+  console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
+}
+
+function normalDist(arr) {
+  var avg = 0;
+  for (i of arr) {
+    avg += i;
+  }
+  avg /= arr.length;
+  var std = 0;
+  for (i of arr) {
+    std += (i - avg) * (i - avg);
+  }
+  std = Math.sqrt(std / arr.length);
+  return [avg, std];
 }
 
 function shuffle(array) {

@@ -60,13 +60,17 @@
             <button class="form-control btn btn-primary" onclick="reset();">生成子集</button>
           </div>
         </div>
-        <div style="width: 25%; min-width: 250px; padding: 10px">
+        <!-- <div style="width: 25%; min-width: 250px; padding: 10px"> -->
+        <div style="min-width: 250px; padding: 10px">
           <table class="table table-bordered">
             <thead>
               <th scope="col">#</th>
               <th scope="col">属性</th>
-              <th scope="col">偏差</th>
-              <th scope="col">计数</th>
+              <th scope="col">Rating</th>
+              <th scope="col">norm1</th>
+              <th scope="col">norm2</th>
+              <th scope="col">delta</th>
+              <th scope="col">cntf</th>
             </thead>
             <tbody id="ranking-table"></tbody>
           </table>
@@ -75,4 +79,12 @@
     </div>
   </body>
   <script src="assets/js/main.js"></script>
+  <script>
+    fetch("data/test.json")
+      .then((res) => res.json())
+      .then((res) => {
+        stat = res;
+        compute();
+      });
+  </script>
 </html>
