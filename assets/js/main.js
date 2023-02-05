@@ -115,23 +115,25 @@ function displaySubsets() {
   reset();
 }
 
-function refresh(id) {
+function refresh(index) {
   if (currentIndex >= currentSubset.length) {
     const nameElement = document.getElementById("name");
     nameElement.innerText = "已完全遍历";
+    document.getElementById("progress-text").innerText = `${currentSubset.length} / ${currentSubset.length}`;
     nameElement.href = "https://www.bilibili.com/bangumi/play/ep29854?t=1292";
     document.getElementById("images").innerHTML = `<a id="bangumi-link" href="https://bgm.tv/character/302" target="_blank">
     <img src="assets/img/omedetou.gif" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     return;
   }
-  if (id === undefined) {
-    id = currentSubset[currentIndex];
+  if (index === undefined) {
+    index = currentIndex;
   }
-
+  const id = currentSubset[index];
   const char = char_index[id];
   const nameElement = document.getElementById("name");
   nameElement.innerText = char.name;
   nameElement.href = "https://zh.moegirl.org.cn/" + name2url(char.name);
+  document.getElementById("progress-text").innerText = `${index + 1} / ${currentSubset.length}`;
 
   const oldPreload = document.head.getElementsByClassName("char-image-preloader");
   for (i of oldPreload) {
@@ -243,7 +245,7 @@ function revert() {
     }
   }
   compute();
-  refresh(id);
+  refresh(currentIndex - 1);
   currentIndex--;
 }
 
@@ -295,9 +297,10 @@ function compute() {
     cnt++;
     tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
     <td style="background: ${colorize(result[i].rating, 4)};">${result[i].rating.toFixed(2)}</td>
-    <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1}</td>
-    <td style="background: ${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</td>
-    <td style="background: ${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</td>
+    <td>${result[i].extra.avg1.toFixed(2)}/${result[i].extra.n1}
+      <span style="background-color:${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</span>
+      <span style="background-color:${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</span>
+    </td>
     </tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
