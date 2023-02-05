@@ -105,8 +105,9 @@ function displaySubsets() {
       if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
     }
     tmpHtml += `<div class="form-check">
+    <label class="form-check-label" for="flexCheckDefault"> 
     <input class="form-check-input" type="checkbox" id="subset-${i}" ${subsets[i].checked ? "checked" : ""} />
-    <label class="form-check-label" for="flexCheckDefault"> ${subsets[i].display} (${cnt}/${subsets[i].subset.length}) </label>
+    ${subsets[i].display} (${cnt}/${subsets[i].subset.length}) </label>
     </div>`;
   }
   const div = document.getElementById("subset-div");
@@ -155,12 +156,12 @@ function refresh(id) {
   var tmp = "";
   if (ids !== undefined) {
     for (var j of ids) {
-      tmp += `<a id="bangumi-link" href="https://bgm.tv/character/${j}" target="_blank">
-      <img src="https://api.bgm.tv/v0/characters/${j}/image?type=medium" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+      tmp += `<a href="https://bgm.tv/character/${j}" target="_blank">
+      <img src="https://api.bgm.tv/v0/characters/${j}/image?type=medium" alt="人物图片" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
   } else {
-    tmp += `<a id="bangumi-link" href="https://bgm.tv/character/13004" target="_blank">
-      <img src="assets/img/akarin.jpg" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+    tmp += `<a href="https://bgm.tv/character/13004" target="_blank">
+      <img src="assets/img/akarin.jpg" alt="无映射" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
   document.getElementById("images").innerHTML = tmp;
   // document.getElementById("char-avatar").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=small`);
@@ -295,7 +296,6 @@ function compute() {
     tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
     <td style="background: ${colorize(result[i].rating, 4)};">${result[i].rating.toFixed(2)}</td>
     <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1}</td>
-    <td>${result[i].extra.avg2.toFixed(2)} / ${result[i].extra.n2}</td>
     <td style="background: ${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</td>
     <td style="background: ${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</td>
     </tr>`;
