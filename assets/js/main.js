@@ -294,8 +294,8 @@ function compute() {
     cnt++;
     tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
     <td style="background: ${colorize(result[i].rating, 4)};">${result[i].rating.toFixed(2)}</td>
-    <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1.toFixed(2)}</td>
-    <td>${result[i].extra.avg2.toFixed(2)} / ${result[i].extra.n2.toFixed(2)}</td>
+    <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1}</td>
+    <td>${result[i].extra.avg2.toFixed(2)} / ${result[i].extra.n2}</td>
     <td style="background: ${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</td>
     <td style="background: ${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</td>
     </tr>`;
