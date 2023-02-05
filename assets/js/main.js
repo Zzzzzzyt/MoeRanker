@@ -259,7 +259,7 @@ function compute() {
     // const [avg1, std1] = normalDist(test);
     // const [avg2, std2] = normalDist(control);
     const delta = avg1 - avg2;
-    const countFactor = Math.min(1.8, Math.max(0, Math.log((test.length * control.length) / (test.length + control.length) / 2 + 1) - 0.6));
+    const countFactor = Math.min(1.8, Math.max(0, Math.log((test.length * control.length) / (test.length + control.length) / 2 + 1) - 0.5));
     // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
     const rating = delta * countFactor;
     result.push({
@@ -292,11 +292,12 @@ function compute() {
     if (Math.abs(result[i].rating) < 0.05) continue;
     const name = `<a${href} target="_blank">${attr.name}</a>`;
     cnt++;
-    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td><td>${result[i].rating.toFixed(2)}</td>
+    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
+    <td style="background: ${colorize(result[i].rating, 4)};">${result[i].rating.toFixed(2)}</td>
     <td>${result[i].extra.avg1.toFixed(2)} / ${result[i].extra.n1.toFixed(2)}</td>
     <td>${result[i].extra.avg2.toFixed(2)} / ${result[i].extra.n2.toFixed(2)}</td>
-    <td>${result[i].extra.delta.toFixed(2)}</td>
-    <td>${result[i].extra.countFactor.toFixed(2)}</td>
+    <td style="background: ${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</td>
+    <td style="background: ${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</td>
     </tr>`;
   }
   document.getElementById("ranking-table").innerHTML = tmp;
@@ -316,6 +317,23 @@ function normalDist(arr) {
   }
   std = Math.sqrt(std / arr.length);
   return [avg, std];
+}
+
+function colorize(val, limit) {
+  var f = Math.min(limit, Math.max(-limit, val)) / limit;
+  if (f > 0) {
+    return `hsl(120 80% ${(100 - f * 50).toFixed(0)}%)`;
+  } else {
+    f = -f;
+    return `hsl(0 80% ${(100 - f * 50).toFixed(0)}%)`;
+  }
+}
+
+function powerWeight(x, w) {
+  if (x > 0) {
+    return Math.pow(x, w);
+  }
+  return -Math.pow(-x, w);
 }
 
 function shuffle(array) {
