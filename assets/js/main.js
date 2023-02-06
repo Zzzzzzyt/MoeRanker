@@ -220,6 +220,9 @@ function score(val) {
 }
 
 function skip() {
+  if (currentIndex >= currentSubset.length) {
+    return;
+  }
   id = currentSubset[currentIndex];
   ratingHistory.push({ id: id, score: undefined });
   currentIndex++;
@@ -245,8 +248,8 @@ function revert() {
     }
   }
   compute();
-  refresh(currentIndex - 1);
   currentIndex--;
+  refresh();
 }
 
 function compute() {
