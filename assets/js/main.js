@@ -197,7 +197,9 @@ function reset() {
   for (var i = 0; i < attr_index.length; i++) {
     stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
   }
-  document.getElementById("ranking-table").innerHTML = "";
+  document.getElementById("ranking-hint").style.display = "initial";
+  document.getElementById("ranking-table").style.display = "none";
+  document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = "";
   refresh();
 }
 
@@ -306,7 +308,11 @@ function compute() {
     </td>
     </tr>`;
   }
-  document.getElementById("ranking-table").innerHTML = tmp;
+  if (tmp.length > 0) {
+    document.getElementById("ranking-hint").style.display = "none";
+    document.getElementById("ranking-table").style.display = "initial";
+    document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
+  }
   lastCompute = -1;
   console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
 }
