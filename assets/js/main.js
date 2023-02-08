@@ -7,6 +7,7 @@ const subsets = [
   { name: "touhou_new_subset", display: "东方project新作", checked: false },
   { name: "touhou_old_subset", display: "东方project旧作", checked: false },
   { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false },
+  { name: "railgun_subset", display: "超炮Only", checked: false },
   { name: "arknights_subset", display: "明日方舟", checked: false },
   { name: "genshin_subset", display: "原神", checked: false },
   { name: "fate_subset", display: "Fate系列", checked: false },
@@ -15,6 +16,22 @@ const subsets = [
   { name: "naruto_subset", display: "火影忍者", checked: false },
   { name: "furry_subset", display: "兽娘属性", checked: false },
   { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
+  { name: "lol_subset", display: "英雄联盟LOL", checked: false },
+  { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
+  { name: "conan_subset", display: "名侦探柯南", checked: false },
+  { name: "derby_subset", display: "赛马娘", checked: false },
+  { name: "kanC_subset", display: "舰队Collection(舰C)", checked: false },
+  { name: "kanR_subset", display: "战舰少女(舰R)", checked: false },
+  { name: "kanB_subset", display: "碧蓝航线(舰B)", checked: false },
+  { name: "blue_archive_subset", display: "蔚蓝档案", checked: false },
+  { name: "key3_subset", display: "Key社三部曲", checked: false },
+  { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false },
+  { name: "pokemon_subset", display: "宝可梦", checked: false },
+  { name: "pony_subset", display: "彩虹小马", checked: false },
+  { name: "idolmaster_subset", display: "偶像大师系列", checked: false },
+  { name: "ES_subset", display: "偶像梦幻祭", checked: false },
+  { name: "PCR_subset", display: "公主连结Re:Dive", checked: false },
+  { name: "RWBY_subset", display: "RWBY", checked: false },
   { name: "zzzyt_subset", display: "Zzzyt私货(测试用)", checked: false },
 ];
 
@@ -107,7 +124,8 @@ function displaySubsets() {
     tmpHtml += `<div class="form-check">
     <label class="form-check-label" for="flexCheckDefault"> 
     <input class="form-check-input" type="checkbox" id="subset-${i}" ${subsets[i].checked ? "checked" : ""} />
-    ${subsets[i].display} (${cnt}/${subsets[i].subset.length}) </label>
+    ${subsets[i].display} <span style="background-color:${colorize(cnt / subsets[i].subset.length, 1)}">
+    (${cnt}/${subsets[i].subset.length})</span></label>
     </div>`;
   }
   const div = document.getElementById("subset-div");
@@ -235,7 +253,7 @@ function revert() {
   if (ratingHistory.length == 0) {
     return;
   }
-  console.log(ratingHistory);
+  // console.log(ratingHistory);
   const { id, score } = ratingHistory.pop();
   console.log(`revert ${score} for ${char_index[id].name}`);
   if (score !== undefined) {
