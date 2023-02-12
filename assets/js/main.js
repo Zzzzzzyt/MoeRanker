@@ -39,30 +39,46 @@ var currentIndex = 0;
 var currentSubset = [];
 
 var char_index, attr_index, char2attr;
+var importanceTmp;
+var importance = [];
+var char2map = [];
 var moegirl2bgm;
 var char2id = new Map();
+var attr2id = new Map();
+var rating = [];
 var ratingHistory = [];
 var stat = [];
+
+function printToPage(msg) {
+  document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
+}
 
 var fetchMain = fetch("data/data_min.json")
   .then((response) => response.json())
   .then((data) => {
     ({ char_index, attr_index, char2attr } = data);
+    console.log(char_index);
     for (var i = 0; i < char_index.length; i++) {
       char2id.set(char_index[i].name, i);
-      char2attr[i] = new Set(char2attr[i]);
+      char2map.push(new Set(char2attr[i]));
     }
     for (var i = 0; i < attr_index.length; i++) {
+      attr2id.set(attr_index[i].name, i);
+      rating.push(undefined);
       stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
     }
-    console.log(`main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`);
+    const msg = `main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`;
+    printToPage(msg);
+    console.log(msg);
   });
 
 var fetchMap = fetch("data/moegirl2bgm.json")
   .then((response) => response.json())
   .then((data) => {
     moegirl2bgm = data;
-    console.log(`mapping loaded: moegirl2bgm.length=${Object.keys(moegirl2bgm).length}`);
+    const msg = `mapping loaded: moegirl2bgm.length=${Object.keys(moegirl2bgm).length}`;
+    printToPage(msg);
+    console.log(msg);
   });
 
 var fetchSubset = [];
@@ -71,21 +87,42 @@ for (var i = 1; i < subsets.length; i++) {
   fetchSubset.push(
     fetch(`data/subsets/${subsets[i].name}.json`).then((response) => {
       if (!response.ok) {
-        console.log(`Subset ${subsets[subid].name} not loaded: ${response.status}`);
+        const msg = `subset ${subsets[subid].name} not loaded: ${response.status}`;
+        printToPage(`<span style="color:red;">${msg}</span>`);
+        console.log(msg);
         subsets[subid].display += ' <span style="color:red;">ERROR</span>';
         subsets[subid].subset = [];
       } else {
         return response.json().then((data) => {
           subsets[subid].subset = data;
-          console.log(`Subset ${subsets[subid].name} loaded: length=${data.length}`);
+          const msg = `subset ${subsets[subid].name} loaded: length=${data.length}`;
+          printToPage(msg);
+          console.log(msg);
         });
       }
     })
   );
 }
 
-Promise.all([Promise.all(fetchSubset), fetchMain, fetchMap]).then(() => {
+var fetchImportance = fetch("data/importance.json")
+  .then((response) => response.json())
+  .then((data) => {
+    const msg = `importance loaded: length=${Object.keys(data).length}`;
+    printToPage(msg);
+    console.log(msg);
+    importanceTmp = data;
+  });
+
+Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).then(() => {
+  for (var i = 0; i < attr_index.length; i++) {
+    importance.push(importanceTmp[attr_index[i].name]);
+  }
   displaySubsets();
+  document.querySelectorAll(".subset-panel").forEach((e) => {
+    e.style.display = "block";
+  });
+  document.getElementById("result-panel").style.display = "block";
+  document.getElementById("loading-output").style.display = "none";
   refresh();
 });
 
@@ -123,13 +160,16 @@ function displaySubsets() {
     }
     tmpHtml += `<div class="form-check">
     <label class="form-check-label" for="flexCheckDefault"> 
-    <input class="form-check-input" type="checkbox" id="subset-${i}" ${subsets[i].checked ? "checked" : ""} />
-    ${subsets[i].display} <span style="background-color:${colorize(cnt / subsets[i].subset.length, 1)}">
+    <input class="form-check-input" type="checkbox" subset-id="${i}" ${subsets[i].checked ? "checked" : ""}
+     ${subsets[i].subset.length === 0 ? "disabled" : ""} />
+    ${subsets[i].display} <span style="background-color:${colorize2(cnt / subsets[i].subset.length, 0, 1)}">
     (${cnt}/${subsets[i].subset.length})</span></label>
     </div>`;
   }
-  const div = document.getElementById("subset-div");
-  div.innerHTML = tmpHtml + div.innerHTML;
+  document.querySelectorAll(".subset-panel").forEach((e) => {
+    const div = e.querySelector(".subset-list");
+    div.innerHTML = tmpHtml + div.innerHTML;
+  });
   reset();
 }
 
@@ -184,30 +224,31 @@ function refresh(index) {
       <img src="assets/img/akarin.jpg" alt="无映射" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
   document.getElementById("images").innerHTML = tmp;
-  // document.getElementById("char-avatar").setAttribute("src", `https://api.bgm.tv/v0/characters/${id}/image?type=small`);
-  // document.getElementById("char-image").src = `https://api.bgm.tv/v0/characters/${id}/image?type=large`;
-  // document.getElementById("bangumi-link").href = `https://bgm.tv/character/${id}`;
 }
 
-function reset() {
+function genSubset(tab) {
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
-    subsets[i].checked = document.getElementById(`subset-${i}`).checked;
+    subsets[i].checked = document.querySelector(`#${tab} input[subset-id="${i}"]`).checked;
     if (subsets[i].checked) {
       for (var j of subsets[i].subset) {
         tmpSet.add(j);
       }
     }
   }
-  forceMapping = document.getElementById("force-mapping").checked;
-  currentSubset = [];
+  forceMapping = document.querySelector(`#${tab} .force-mapping`).checked;
+  ret = [];
   tmpSet.forEach((val) => {
     if (forceMapping && moegirl2bgm[char_index[val].name] === undefined) {
       return;
     }
-    currentSubset.push(val);
+    ret.push(val);
   });
-  currentSubset = shuffle(currentSubset);
+  return ret;
+}
+
+function reset() {
+  currentSubset = shuffle(genSubset("tab-score"));
   currentIndex = 0;
   console.log(`new subset generated: length=${currentSubset.length}`);
   ratingHistory = [];
@@ -215,7 +256,7 @@ function reset() {
   for (var i = 0; i < attr_index.length; i++) {
     stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
   }
-  document.getElementById("ranking-hint").style.display = "initial";
+  document.getElementById("ranking-hint").style.display = "block";
   document.getElementById("ranking-table").style.display = "none";
   document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = "";
   refresh();
@@ -226,7 +267,7 @@ function score(val) {
   console.log(`score ${val} for ${char_index[id].name}`);
   ratingHistory.push({ id: id, score: val });
   for (var i = 0; i < attr_index.length; i++) {
-    if (char2attr[id].has(i)) {
+    if (char2map[id].has(i)) {
       stat[i].test.push(val);
       stat[i].test_sum += val;
     } else {
@@ -258,7 +299,7 @@ function revert() {
   console.log(`revert ${score} for ${char_index[id].name}`);
   if (score !== undefined) {
     for (var i = 0; i < attr_index.length; i++) {
-      if (char2attr[id].has(i)) {
+      if (char2map[id].has(i)) {
         stat[i].test.pop();
         stat[i].test_sum -= score;
       } else {
@@ -279,7 +320,10 @@ function compute() {
   for (var i = 0; i < attr_index.length; i++) {
     const test = stat[i].test;
     const control = stat[i].control;
-    if (test.length === 0 || control.length === 0) continue;
+    if (test.length === 0 || control.length === 0) {
+      rating[i] = undefined;
+      continue;
+    }
     const avg1 = stat[i].test_sum / test.length;
     const avg2 = stat[i].control_sum / control.length;
     // const [avg1, std1] = normalDist(test);
@@ -287,22 +331,21 @@ function compute() {
     const delta = avg1 - avg2;
     const countFactor = Math.min(1.8, Math.max(0, Math.log((test.length * control.length) / (test.length + control.length) / 2 + 1) - 0.5));
     // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
-    const rating = delta * countFactor;
-    result.push({
+    const rt = delta * countFactor;
+    rating[i] = {
       attr: i,
-      rating: rating,
-      extra: {
-        avg1: avg1,
-        // std1: std1,
-        n1: test.length,
-        avg2: avg2,
-        // std2: std2,
-        n2: control.length,
-        delta: delta,
-        countFactor: countFactor,
-        // stdFactor: stdFactor,
-      },
-    });
+      rating: rt,
+      avg1: avg1,
+      // std1: std1,
+      n1: test.length,
+      avg2: avg2,
+      // std2: std2,
+      n2: control.length,
+      delta: delta,
+      countFactor: countFactor,
+      // stdFactor: stdFactor,
+    };
+    result.push(rating[i]);
   }
   result.sort((a, b) => {
     return b.rating - a.rating;
@@ -319,20 +362,123 @@ function compute() {
     const name = `<a${href} target="_blank">${attr.name}</a>`;
     cnt++;
     tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
-    <td style="background: ${colorize(result[i].rating, 4)};">${result[i].rating.toFixed(2)}</td>
-    <td>${result[i].extra.avg1.toFixed(2)}/${result[i].extra.n1}
-      <span style="background-color:${colorize(result[i].extra.delta, 3)};">${result[i].extra.delta.toFixed(2)}</span>
-      <span style="background-color:${colorize(result[i].extra.countFactor, 1.8)};">${result[i].extra.countFactor.toFixed(2)}</span>
+    <td style="background: ${colorize(result[i].rating, 4)}">${result[i].rating.toFixed(2)}</td>
+    <td>${result[i].avg1.toFixed(2)}/${result[i].n1}
+      ${colorspan(result[i].delta, 8)}
+      ${colorspan2(result[i].countFactor, 0, 1.8)}
     </td>
     </tr>`;
   }
   if (tmp.length > 0) {
     document.getElementById("ranking-hint").style.display = "none";
-    document.getElementById("ranking-table").style.display = "initial";
+    document.getElementById("ranking-table").style.display = "block";
     document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
   }
   lastCompute = -1;
   console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
+}
+
+function predict(subset) {
+  var prediction = [];
+  for (var ii = 0; ii < subset.length; ii++) {
+    const i = subset[ii];
+    const scores = [];
+    for (attr of char2attr[i]) {
+      const rt = rating[attr];
+      if (rt !== undefined) {
+        scores.push({ rating: rt.rating, attr: attr });
+      }
+    }
+    scores.sort((a, b) => {
+      return -(a.rating - b.rating);
+    });
+    var sum = 0;
+    var impsum = 0;
+    const scores2 = [];
+    for (var j = 0; j < 6 && j < Math.ceil(scores.length / 2); j++) {
+      const s = scores[scores.length - 1 - j];
+      sum += s.rating * importance[s.attr];
+      impsum += importance[s.attr];
+      scores2.push({
+        score: s.rating * importance[s.attr],
+        rating: s.rating,
+        weight: importance[s.attr],
+        attr: s.attr,
+      });
+    }
+    for (var j = 0; j < 6 && j < Math.floor(scores.length / 2); j++) {
+      const s = scores[j];
+      sum += s.rating * importance[s.attr];
+      impsum += importance[s.attr];
+      scores2.push({
+        score: s.rating * importance[s.attr],
+        rating: s.rating,
+        weight: importance[s.attr],
+        attr: s.attr,
+      });
+    }
+    scores2.sort((a, b) => {
+      return -a.weight + b.weight;
+    });
+    impsum += Math.max(0, 12 - scores.length);
+    if (sum !== 0) {
+      prediction.push({
+        score: sum / impsum,
+        impsum: impsum,
+        id: i,
+        scores: scores2,
+      });
+    }
+  }
+  prediction.sort((a, b) => {
+    return -(a.score - b.score);
+  });
+  return prediction;
+}
+
+function resetPrediction() {
+  const subset = genSubset("tab-predict");
+  const prediction = predict(subset, rating);
+  var tmp = "";
+  var max = 0;
+  var min = 0;
+  for (var i of prediction) {
+    const x = i.score;
+    if (x > 0) {
+      max = Math.max(max, x);
+    } else {
+      min = Math.min(min, x);
+    }
+  }
+
+  for (var i = 0; i < prediction.length; i++) {
+    const cur = prediction[i];
+    var tmp2 = "";
+    for (var j = 0; j < cur.scores.length; j++) {
+      const score = cur.scores[j];
+      const tmp3 = attr_index[score.attr].name;
+      if (attr_index[score.attr].article !== undefined) {
+        tmp2 += `<a href="https://zh.moegirl.org.cn/${name2url(attr_index[score.attr].article)}" target="_blank">${tmp3}</a> `;
+      } else {
+        tmp2 += tmp3 + " ";
+      }
+      // tmp2 += `${colorspan2(score.score, -3, 8)} ${colorspan2(score.rating, -3, 8)} ${colorspan(score.weight, 0, 3)}`;
+      tmp2 += `${colorspan2(score.score / cur.impsum, -1, 1)}`;
+    }
+    tmp += `<tr><td>${i + 1}</td>
+    <td><a href="https://zh.moegirl.org.cn/${name2url(char_index[cur.id].name)}" target="_blank">${char_index[cur.id].name}</a></td>
+    <td style="background-color:${colorize(cur.score, min, max)}">${cur.score.toFixed(2)}</td><td>${tmp2}</td></tr>`;
+  }
+  document.getElementById("prediction-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
+}
+
+function changeTab() {
+  const radios = document.querySelectorAll("#tab-list>input");
+  function toggle(radio, tabid) {
+    document.getElementById(tabid).style.display = radio.checked ? "block" : "none";
+  }
+  toggle(radios[0], "tab-score");
+  toggle(radios[1], "tab-predict");
 }
 
 function normalDist(arr) {
@@ -349,17 +495,46 @@ function normalDist(arr) {
   return [avg, std];
 }
 
-function colorize(val, limit) {
-  var f = Math.min(limit, Math.max(-limit, val)) / limit;
-  if (f > 0) {
-    return `hsl(120 80% ${(100 - f * 50).toFixed(0)}%)`;
+function colorize(val, limit1, limit2, center) {
+  if (limit2 === undefined) {
+    limit2 = -limit1;
+  }
+  if (center === undefined) {
+    center = 0;
+  }
+  if (limit1 > limit2) {
+    [limit1, limit2] = [limit2, limit1];
+  }
+  if (val > center) {
+    const f = (Math.min(limit2, val) - center) / (limit2 - center);
+    return `hsl(120 80% ${(100 - f * 40).toFixed(0)}%)`;
   } else {
-    f = -f;
-    return `hsl(0 80% ${(100 - f * 50).toFixed(0)}%)`;
+    const f = (Math.max(limit1, val) - center) / (limit1 - center);
+    return `hsl(0 80% ${(100 - f * 30).toFixed(0)}%)`;
   }
 }
 
-function powerWeight(x, w) {
+function colorize2(val, limit1, limit2) {
+  if (limit2 === undefined) {
+    limit2 = 0;
+  }
+  if (limit1 > limit2) {
+    [limit1, limit2] = [limit2, limit1];
+  }
+  f = Math.max(limit1, Math.min(limit2, val));
+  f = (f - limit1) / (limit2 - limit1);
+  return `hsl(${(f * 120).toFixed(0)} 80% 70%)`;
+}
+
+function colorspan(val, limit1, limit2, center) {
+  return `<span style="background-color:${colorize(val, limit1, limit2, center)}">${val.toFixed(2)}</span>`;
+}
+
+function colorspan2(val, limit1, limit2) {
+  return `<span style="background-color:${colorize2(val, limit1, limit2)}">${val.toFixed(2)}</span>`;
+}
+
+function powerWeigh(x, w) {
   if (x > 0) {
     return Math.pow(x, w);
   }

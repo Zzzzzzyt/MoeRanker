@@ -27,9 +27,45 @@
         }
       } */
 
+      @media (max-width: 992px) {
+        .subset-panel {
+          max-height: initial !important;
+          overflow: initial !important;
+        }
+
+        #tab-predict > div {
+          width: 680px !important;
+        }
+
+        #tab-predict .subset-panel {
+          flex-basis: 100% !important;
+        }
+      }
+
+      @media (max-width: 1400px) {
+        #result-panel {
+          max-height: initial !important;
+          overflow: initial !important;
+        }
+      }
+
       @media (max-width: 1200px) {
         #update-history {
           display: none;
+        }
+      }
+
+      @media (pointer: none), (pointer: coarse) {
+        #prediction-panel {
+          overflow-x: auto;
+        }
+
+        #prediction-table {
+          min-width: 680px;
+        }
+
+        #tab-predict > div {
+          width: initial !important;
         }
       }
 
@@ -39,6 +75,34 @@
 
       span.number-red {
         color: #cc0000;
+      }
+
+      .tab-btn-div {
+        line-height: 40px;
+        text-align: center;
+        flex-basis: 150px;
+        transition-duration: 0.15s;
+        font-weight: bold;
+      }
+
+      .tab-btn {
+        transition-duration: 0.15s;
+        width: 100%;
+      }
+
+      .btn-check:checked + .tab-btn-div > .tab-btn {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+
+      .btn-check:checked + .tab-btn-div > .tab-btn:hover {
+        background-color: #0b5ed7;
+      }
+
+      .tab-btn:hover {
+        background-color: #6199ec;
+        color: #fff;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -53,7 +117,7 @@
       </div> -->
         <div style="flex-basis: 800px">
           <h1>
-            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.0.1</sup>
+            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.1.0</sup>
           </h1>
           <p>
             by Zzzyt 2023, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker" target="_blank">Zzzzzzyt/MoeRanker</a><br />
@@ -63,7 +127,8 @@
             使用说明： 选择熟悉的作品，点击生成子集，开始评分。结果会在样本数足够时显示，实时更新，随时可以停止评分。<br />
             在<span class="number-red">-5</span>到<span class="number-green">5</span>之间为人物评分， 喜爱为<span class="number-green">5</span>，厌恶为<span class="number-red">-5</span>。<br />
             结果表格中评分为正则该<ruby>属性<rp>(</rp><rt>X P</rt><rp>)</rp></ruby>为正面，反之为反面，绝对值代表确信度。<br />
-            图片来自bangumi自动映射，可能出现无图，多图，错图现象，<b>仅供参考，请以人名（萌百URL）为准。</b>启用<i>必须有图像</i>将保证至少有一张备选图片。 如果你<ruby>对指定的子集有充分了解<rp>(</rp><rt>二次元浓度极高</rt><rp>)</rp></ruby
+            图片来自bangumi自动映射，<span style="font-weight: bold; color: #ff0000">可能出现无图，多图，错图现象，仅供参考，请以人名（萌百URL）为准。</span>启用<i>必须有图像</i>将保证至少有一张备选图片。 如果你<ruby
+              >对指定的子集有充分了解<rp>(</rp><rt>二次元浓度极高</rt><rp>)</rp></ruby
             >，请尽量关闭该选项以提高样本数。子集名称后标注了(有映射数/总人数)，可供参考。点击人物和<ruby>属性<rp>(</rp><rt>X P</rt><rp>)</rp></ruby>的文字链接将跳转至萌百对应页面，点击图片将跳转至Bangumi。
           </p>
           <p>
@@ -74,6 +139,14 @@
         </div>
         <div id="update-history" style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
           <h2>更新日志</h2>
+          <p>
+            v1.1.0 (2023-2-12):<br />
+            - <b>加入预测功能</b><br />
+            - <b>使用Bangumi 120k数据集(未完成)</b><br />
+            - 优化数据集<br />
+            - UI微调<br />
+          </p>
+
           <p>
             v1.0.3 (2023-2-8):<br />
             - 加入子集：超炮Only，英雄联盟LOL，虚拟歌姬，名侦探柯南，赛马娘，舰队Collection(舰C)，战舰少女(舰R)，碧蓝航线(舰B)，蔚蓝档案，Key社三部曲，宝可梦系列角色，宝可梦，彩虹小马，偶像大师系列，偶像梦幻祭，公主连结Re:Dive，RWBY <br />
@@ -101,8 +174,21 @@
           </p>
         </div>
       </div>
-      <hr />
-      <div style="display: flex; flex-wrap: wrap">
+    </div>
+    <div style="border-top: 1px #ccc solid; border-bottom: 1px #ccc solid; margin-top: 10px; margin-bottom: 10px">
+      <div id="tab-list" class="container" style="display: flex">
+        <input type="radio" class="btn-check" name="tab-select" id="tab1-radio" onchange="changeTab()" checked />
+        <div class="tab-btn-div">
+          <label class="tab-btn" for="tab1-radio">问卷</label>
+        </div>
+        <input type="radio" class="btn-check" name="tab-select" id="tab2-radio" onchange="changeTab()" />
+        <div class="tab-btn-div">
+          <label class="tab-btn" for="tab2-radio">预测</label>
+        </div>
+      </div>
+    </div>
+    <div id="tab-score" class="container">
+      <div id="score-panel" style="display: flex; flex-wrap: wrap">
         <div style="flex-grow: 1; width: 600px">
           <p style="font-size: 32pt">
             <a href="https://zh.moegirl.org.cn/不要停下来啊！" id="name" target="_blank">加载中</a>
@@ -124,22 +210,21 @@
           <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(4);">3</button>
           <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(8);">4</button>
           <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(16);">5</button>
-          <br />
-          <br />
-          <div id="images" style="width: 100%; margin-bottom: 20px; max-width: 600px; min-height: 500px; display: flex; flex-wrap: wrap"></div>
+          <div id="loading-output" style="margin-top: 20px"></div>
+          <div id="images" style="width: 100%; margin-bottom: 20px; margin-top: 20px; max-width: 600px; min-height: 500px; display: flex; flex-wrap: wrap"></div>
         </div>
-        <div style="padding: 10px">
-          <div id="subset-div"></div>
-          <br />
-          <div class="input-group">
+        <div class="subset-panel" style="flex-basis: 300px; max-height: 90vh; padding: 10px; display: none; overflow: hidden auto">
+          <div class="input-group" style="max-width: 300px">
             <div class="input-group-text">
-              <input id="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
+              <input class="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
               <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
             </div>
             <button class="form-control btn btn-primary" onclick="reset();">生成子集</button>
           </div>
+          <br />
+          <div class="subset-list"></div>
         </div>
-        <div style="padding: 10px; flex-basis: 360px; max-height: 850px; overflow-x: hidden; overflow-y: auto">
+        <div id="result-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 850px; overflow: auto auto; display: none">
           <p id="ranking-hint" style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">&nbsp;&nbsp;&nbsp;结果将显示在这里&nbsp;&nbsp;&nbsp;</p>
           <table id="ranking-table" class="table table-bordered" style="min-width: 300px; display: none">
             <thead>
@@ -147,6 +232,32 @@
               <th scope="col">属性</th>
               <th scope="col">评分</th>
               <th scope="col">debug</th>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="tab-predict" class="container" style="display: none">
+      <div style="display: flex; flex-wrap: wrap">
+        <div class="subset-panel" style="flex-basis: 300px; padding: 10px; display: none">
+          <div class="input-group" style="max-width: 300px">
+            <div class="input-group-text">
+              <input class="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
+              <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
+            </div>
+            <button class="form-control btn btn-primary" onclick="resetPrediction();">预测</button>
+          </div>
+          <br />
+          <div class="subset-list"></div>
+        </div>
+        <div id="prediction-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; overflow-x: visible; overflow-y: auto">
+          <table id="prediction-table" class="table table-bordered">
+            <thead>
+              <th scope="col">No.</th>
+              <th scope="col" width="70">名称</th>
+              <th scope="col">评分</th>
+              <th scope="col">属性</th>
             </thead>
             <tbody></tbody>
           </table>
@@ -161,6 +272,11 @@
       .then((res) => {
         stat = res;
         compute();
+
+        setTimeout(() => {
+          changeTab();
+          resetPrediction();
+        }, 500);
       });
   </script> -->
 </html>
