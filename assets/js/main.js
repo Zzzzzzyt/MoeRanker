@@ -138,17 +138,13 @@ function displaySubsets() {
   currentSubset = allSubset;
   subsets[0].subset = allSubset;
   for (var i = 1; i < subsets.length; i++) {
-    var tmpSet = new Set();
+    const tmpSubset = [];
     for (var j = 0; j < subsets[i].subset.length; j++) {
       const id = char2id.get(subsets[i].subset[j]);
       if (id === undefined) {
         continue;
       }
-      tmpSet.add(id);
-    }
-    const tmpSubset = [];
-    for (var j = 0; j < char_index.length; j++) {
-      if (tmpSet.has(j)) tmpSubset.push(j);
+      tmpSubset.push(id);
     }
     subsets[i].subset = tmpSubset;
   }
@@ -159,8 +155,8 @@ function displaySubsets() {
       if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
     }
     tmpHtml += `<div class="form-check">
-    <label class="form-check-label" for="flexCheckDefault"> 
-    <input class="form-check-input" type="checkbox" subset-id="${i}" ${subsets[i].checked ? "checked" : ""}
+    <label class="form-check-label" for="subset-${i}"> 
+    <input class="form-check-input" type="checkbox" name="subset-${i}" ${subsets[i].checked ? "checked" : ""}
      ${subsets[i].subset.length === 0 ? "disabled" : ""} />
     ${subsets[i].display} <span style="background-color:${colorize2(cnt / subsets[i].subset.length, 0, 1)}">
     (${cnt}/${subsets[i].subset.length})</span></label>
@@ -229,14 +225,14 @@ function refresh(index) {
 function genSubset(tab) {
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
-    subsets[i].checked = document.querySelector(`#${tab} input[subset-id="${i}"]`).checked;
+    subsets[i].checked = document.querySelector(`#${tab} input[name="subset-${i}"]`).checked;
     if (subsets[i].checked) {
       for (var j of subsets[i].subset) {
         tmpSet.add(j);
       }
     }
   }
-  forceMapping = document.querySelector(`#${tab} .force-mapping`).checked;
+  forceMapping = document.querySelector(`#${tab} input[name="force-mapping"]`).checked;
   ret = [];
   tmpSet.forEach((val) => {
     if (forceMapping && moegirl2bgm[char_index[val].name] === undefined) {
@@ -248,7 +244,16 @@ function genSubset(tab) {
 }
 
 function reset() {
-  currentSubset = shuffle(genSubset("tab-score"));
+  random = document.querySelector(`#tab-score input[name="random"]`);
+  if (random === undefined) {
+    random = false;
+  } else {
+    random = random.checked;
+  }
+  currentSubset = genSubset("tab-score");
+  if (random) {
+    currentSubset = shuffle(currentSubset);
+  }
   currentIndex = 0;
   console.log(`new subset generated: length=${currentSubset.length}`);
   ratingHistory = [];

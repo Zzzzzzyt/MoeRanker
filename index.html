@@ -28,7 +28,7 @@
       } */
 
       @media (max-width: 992px) {
-        .subset-panel {
+        .subset-list {
           max-height: initial !important;
           overflow: initial !important;
         }
@@ -106,7 +106,7 @@
       }
     </style>
   </head>
-  <body>
+  <body style="min-width: 350px">
     <div class="container" style="margin-top: 50px">
       <div style="display: flex; justify-content: space-between">
         <!-- <div id="mascot" style="width: 180px; max-width: 30%; float: right">
@@ -117,7 +117,7 @@
       </div> -->
         <div style="flex-basis: 800px">
           <h1>
-            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.1.0</sup>
+            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.1.1</sup>
           </h1>
           <p>
             by Zzzyt 2023, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker" target="_blank">Zzzzzzyt/MoeRanker</a><br />
@@ -140,11 +140,17 @@
         <div id="update-history" style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
           <h2>更新日志</h2>
           <p>
+            v1.1.1 (2023-2-13):<br />
+            - Bangumi 120k数据集(无subject)<br />
+            - 顺序做题
+          </p>
+
+          <p>
             v1.1.0 (2023-2-12):<br />
             - <b>加入预测功能</b><br />
             - <b>使用Bangumi 120k数据集(未完成)</b><br />
             - 优化数据集<br />
-            - UI微调<br />
+            - UI微调
           </p>
 
           <p>
@@ -213,16 +219,21 @@
           <div id="loading-output" style="margin-top: 20px"></div>
           <div id="images" style="width: 100%; margin-bottom: 20px; margin-top: 20px; max-width: 600px; min-height: 500px; display: flex; flex-wrap: wrap"></div>
         </div>
-        <div class="subset-panel" style="flex-basis: 300px; max-height: 90vh; padding: 10px; display: none; overflow: hidden auto">
-          <div class="input-group" style="max-width: 300px">
-            <div class="input-group-text">
-              <input class="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
-              <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
+        <div class="subset-panel" style="flex-basis: 300px; padding: 10px; display: none">
+          <div style="max-width: 300px">
+            <div class="input-group" style="margin-bottom: 10px">
+              <div class="input-group-text">
+                <input name="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
+              </div>
+              <div class="input-group-text">
+                <input name="random" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="random">乱序</label></span>
+              </div>
             </div>
-            <button class="form-control btn btn-primary" onclick="reset();">生成子集</button>
+            <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="reset();">生成子集</button>
           </div>
-          <br />
-          <div class="subset-list"></div>
+          <div class="subset-list" style="max-height: 85vh; overflow: hidden auto"></div>
         </div>
         <div id="result-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 850px; overflow: auto auto; display: none">
           <p id="ranking-hint" style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">&nbsp;&nbsp;&nbsp;结果将显示在这里&nbsp;&nbsp;&nbsp;</p>
@@ -241,14 +252,15 @@
     <div id="tab-predict" class="container" style="display: none">
       <div style="display: flex; flex-wrap: wrap">
         <div class="subset-panel" style="flex-basis: 300px; padding: 10px; display: none">
-          <div class="input-group" style="max-width: 300px">
-            <div class="input-group-text">
-              <input class="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
-              <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
+          <div style="max-width: 300px">
+            <div class="input-group" style="margin-bottom: 10px">
+              <div class="input-group-text">
+                <input name="force-mapping" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="force-mapping">必须有图像</label></span>
+              </div>
             </div>
-            <button class="form-control btn btn-primary" onclick="resetPrediction();">预测</button>
+            <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="resetPrediction();">预测</button>
           </div>
-          <br />
           <div class="subset-list"></div>
         </div>
         <div id="prediction-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; overflow-x: visible; overflow-y: auto">
