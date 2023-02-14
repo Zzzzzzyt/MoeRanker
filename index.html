@@ -117,7 +117,7 @@
       </div> -->
         <div style="flex-basis: 800px">
           <h1>
-            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.1.1</sup>
+            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.2.0</sup>
           </h1>
           <p>
             by Zzzyt 2023, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker" target="_blank">Zzzzzzyt/MoeRanker</a><br />
@@ -139,6 +139,12 @@
         </div>
         <div id="update-history" style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
           <h2>更新日志</h2>
+          <p>
+            v1.2.0 (2023-2-14)<br />
+            - <b>全局自动保存进度</b><br />
+            - UI微调
+          </p>
+
           <p>
             v1.1.1 (2023-2-13):<br />
             - Bangumi 120k数据集(无subject)<br />
@@ -233,7 +239,7 @@
             </div>
             <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="reset();">生成子集</button>
           </div>
-          <div class="subset-list" style="max-height: 85vh; overflow: hidden auto"></div>
+          <div class="subset-list" style="padding-left: 5px; max-height: 85vh; overflow: hidden auto"></div>
         </div>
         <div id="result-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 850px; overflow: auto auto; display: none">
           <p id="ranking-hint" style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">&nbsp;&nbsp;&nbsp;结果将显示在这里&nbsp;&nbsp;&nbsp;</p>
@@ -261,7 +267,7 @@
             </div>
             <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="resetPrediction();">预测</button>
           </div>
-          <div class="subset-list"></div>
+          <div class="subset-list" style="padding-left: 5px"></div>
         </div>
         <div id="prediction-panel" style="padding: 10px; flex-basis: 360px; flex-grow: 1; overflow-x: visible; overflow-y: auto">
           <table id="prediction-table" class="table table-bordered">

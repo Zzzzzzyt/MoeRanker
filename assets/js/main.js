@@ -36,7 +36,7 @@ const subsets = [
 ];
 
 var currentIndex = 0;
-var currentSubset = [];
+var currentSubset = null;
 
 var char_index, attr_index, char2attr;
 var importanceTmp;
@@ -45,9 +45,106 @@ var char2map = [];
 var moegirl2bgm;
 var char2id = new Map();
 var attr2id = new Map();
-var rating = [];
-var ratingHistory = [];
-var stat = [];
+var rating = null;
+var ratingHistory = null;
+var stat = null;
+
+const useStorage = storageAvailable("localStorage");
+
+function packState() {
+  const ratingHistory2 = JSON.stringify(ratingHistory);
+  const currentSubset2 = JSON.stringify(currentSubset);
+  const currentIndex2 = currentIndex.toString();
+  const checkedSubsets = [];
+  const list = document.querySelector("#score-panel .subset-list").querySelectorAll('input[name^="subset-"]');
+  for (node of list) {
+    const checked = node.checked;
+    const name = subsets[parseInt(node.name.replace("subset-", ""))].name;
+    if (checked) {
+      checkedSubsets.push(name);
+    }
+  }
+  const checkedSubsets2 = JSON.stringify(checkedSubsets);
+  const pack = { ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets2 };
+  console.log("packed:", pack);
+  return pack;
+}
+
+function saveState() {
+  if (!useStorage) return false;
+  try {
+    const pack = packState();
+    window.localStorage.setItem("ratingHistory", pack.ratingHistory);
+    window.localStorage.setItem("currentSubset", pack.currentSubset);
+    window.localStorage.setItem("currentIndex", pack.currentIndex);
+    window.localStorage.setItem("checkedSubsets", pack.checkedSubsets);
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+  console.log("state saved");
+  return true;
+}
+
+function loadState() {
+  if (!useStorage) return false;
+  try {
+    var ratingHistory2 = window.localStorage.getItem("ratingHistory");
+    var currentSubset2 = window.localStorage.getItem("currentSubset");
+    var currentIndex2 = window.localStorage.getItem("currentIndex");
+    var checkedSubsets = window.localStorage.getItem("checkedSubsets");
+    return unpackState({ ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets });
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+function unpackState(pack) {
+  console.log("unpacking:", pack);
+  if (pack.checkedSubsets) {
+    const checkedSubsets = JSON.parse(pack.checkedSubsets);
+    const list = document.querySelector("#score-panel .subset-list");
+    for (var i = 0; i < subsets.length; i++) {
+      const node = list.querySelector(`input[name="subset-${i}"]`);
+      if (checkedSubsets.indexOf(subsets[i].name) !== -1) {
+        node.checked = true;
+      } else {
+        node.checked = false;
+      }
+    }
+  }
+  if (!(pack.ratingHistory && pack.currentSubset && pack.currentIndex)) {
+    return false;
+  }
+  const ratingHistory2 = JSON.parse(pack.ratingHistory);
+  const currentSubset2 = JSON.parse(pack.currentSubset);
+  const currentIndex2 = parseInt(pack.currentIndex);
+  stat = [];
+  rating = [];
+  for (var i = 0; i < attr_index.length; i++) {
+    rating.push(null);
+    stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
+  }
+  for (entry of ratingHistory2) {
+    const id = entry.id;
+    const val = entry.score;
+    for (var i = 0; i < attr_index.length; i++) {
+      if (char2map[id].has(i)) {
+        stat[i].test.push(val);
+        stat[i].test_sum += val;
+      } else {
+        stat[i].control.push(val);
+        stat[i].control_sum += val;
+      }
+    }
+  }
+  ratingHistory = ratingHistory2;
+  currentSubset = currentSubset2;
+  currentIndex = currentIndex2;
+  compute();
+  return true;
+}
 
 function printToPage(msg) {
   document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
@@ -64,8 +161,6 @@ var fetchMain = fetch("data/data_min.json")
     }
     for (var i = 0; i < attr_index.length; i++) {
       attr2id.set(attr_index[i].name, i);
-      rating.push(undefined);
-      stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
     }
     const msg = `main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`;
     printToPage(msg);
@@ -118,6 +213,32 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).th
     importance.push(importanceTmp[attr_index[i].name]);
   }
   displaySubsets();
+  const loaded = loadState();
+  if (loaded) {
+    const msg = `locaStorage loaded: ratingHistory=${ratingHistory.length} currentSubset=${currentSubset.length}`;
+    console.log(msg);
+    printToPage(msg);
+  } else {
+    if (useStorage) {
+      msg = "localStorage available but loading failed. Is this the first session?";
+      console.warn(msg);
+      printToPage(msg);
+    }
+    rating = [];
+    stat = [];
+    for (var i = 0; i < attr_index.length; i++) {
+      rating.push(null);
+      stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
+    }
+    ratingHistory = [];
+  }
+  printToPage("all set let's gooooooooooooooooooooooo");
+
+  if (!loaded) {
+    currentSubset = subsets[0].subset;
+    reset();
+  }
+
   document.querySelectorAll(".subset-panel").forEach((e) => {
     e.style.display = "block";
   });
@@ -135,7 +256,6 @@ function displaySubsets() {
   for (var i = 0; i < char_index.length; i++) {
     allSubset.push(i);
   }
-  currentSubset = allSubset;
   subsets[0].subset = allSubset;
   for (var i = 1; i < subsets.length; i++) {
     const tmpSubset = [];
@@ -166,7 +286,6 @@ function displaySubsets() {
     const div = e.querySelector(".subset-list");
     div.innerHTML = tmpHtml + div.innerHTML;
   });
-  reset();
 }
 
 function refresh(index) {
@@ -245,7 +364,7 @@ function genSubset(tab) {
 
 function reset() {
   random = document.querySelector(`#tab-score input[name="random"]`);
-  if (random === undefined) {
+  if (random === null) {
     random = false;
   } else {
     random = random.checked;
@@ -264,6 +383,7 @@ function reset() {
   document.getElementById("ranking-hint").style.display = "block";
   document.getElementById("ranking-table").style.display = "none";
   document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = "";
+  saveState();
   refresh();
 }
 
@@ -282,6 +402,7 @@ function score(val) {
   }
   compute();
   currentIndex++;
+  saveState();
   refresh();
 }
 
@@ -290,8 +411,9 @@ function skip() {
     return;
   }
   id = currentSubset[currentIndex];
-  ratingHistory.push({ id: id, score: undefined });
+  ratingHistory.push({ id: id, score: null });
   currentIndex++;
+  saveState();
   refresh();
 }
 
@@ -315,6 +437,7 @@ function revert() {
   }
   compute();
   currentIndex--;
+  saveState();
   refresh();
 }
 
@@ -326,7 +449,7 @@ function compute() {
     const test = stat[i].test;
     const control = stat[i].control;
     if (test.length === 0 || control.length === 0) {
-      rating[i] = undefined;
+      rating[i] = null;
       continue;
     }
     const avg1 = stat[i].test_sum / test.length;
@@ -390,7 +513,7 @@ function predict(subset) {
     const scores = [];
     for (attr of char2attr[i]) {
       const rt = rating[attr];
-      if (rt !== undefined) {
+      if (rt !== null) {
         scores.push({ rating: rt.rating, attr: attr });
       }
     }
@@ -562,4 +685,32 @@ function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min) + min);
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API#testing_for_availability
+function storageAvailable(type) {
+  let storage;
+  try {
+    storage = window[type];
+    const x = "__storage_test__";
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch (e) {
+    return (
+      e instanceof DOMException &&
+      // everything except Firefox
+      (e.code === 22 ||
+        // Firefox
+        e.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        e.name === "QuotaExceededError" ||
+        // Firefox
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+      // acknowledge QuotaExceededError only if there's something already stored
+      storage &&
+      storage.length !== 0
+    );
+  }
 }
