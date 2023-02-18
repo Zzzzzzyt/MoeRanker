@@ -56,10 +56,10 @@ function packState() {
   const currentSubset2 = JSON.stringify(currentSubset);
   const currentIndex2 = currentIndex.toString();
   const checkedSubsets = [];
-  const list = document.querySelector("#score-panel .subset-list").querySelectorAll('input[name^="subset-"]');
+  const list = document.querySelector("#score-panel .subset-list").querySelectorAll('input[id*="subset"]');
   for (node of list) {
     const checked = node.checked;
-    const name = subsets[parseInt(node.name.replace("subset-", ""))].name;
+    const name = subsets[parseInt(node.id.replace("tab-score-subset-", ""))].name;
     if (checked) {
       checkedSubsets.push(name);
     }
@@ -104,9 +104,8 @@ function unpackState(pack) {
   console.log("unpacking:", pack);
   if (pack.checkedSubsets) {
     const checkedSubsets = JSON.parse(pack.checkedSubsets);
-    const list = document.querySelector("#score-panel .subset-list");
     for (var i = 0; i < subsets.length; i++) {
-      const node = list.querySelector(`input[name="subset-${i}"]`);
+      const node = document.getElementById(`tab-score-subset-${i}`);
       if (checkedSubsets.indexOf(subsets[i].name) !== -1) {
         node.checked = true;
       } else {
@@ -268,6 +267,12 @@ function displaySubsets() {
     }
     subsets[i].subset = tmpSubset;
   }
+
+  document.querySelector("#tab-score .subset-list").innerHTML = genSubsetlist("tab-score");
+  document.querySelector("#tab-predict .subset-list").innerHTML = genSubsetlist("tab-predict");
+}
+
+function genSubsetlist(tab) {
   var tmpHtml = "";
   for (var i = 0; i < subsets.length; i++) {
     var cnt = 0;
@@ -275,17 +280,14 @@ function displaySubsets() {
       if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
     }
     tmpHtml += `<div class="form-check">
-    <label class="form-check-label" for="subset-${i}"> 
-    <input class="form-check-input" type="checkbox" name="subset-${i}" ${subsets[i].checked ? "checked" : ""}
+    <input class="form-check-input" type="checkbox" id="${tab}-subset-${i}" ${subsets[i].checked ? "checked" : ""}
      ${subsets[i].subset.length === 0 ? "disabled" : ""} />
+    <label class="form-check-label" for="${tab}-subset-${i}"> 
     ${subsets[i].display} <span style="background-color:${colorize2(cnt / subsets[i].subset.length, 0, 1)}">
     (${cnt}/${subsets[i].subset.length})</span></label>
     </div>`;
   }
-  document.querySelectorAll(".subset-panel").forEach((e) => {
-    const div = e.querySelector(".subset-list");
-    div.innerHTML = tmpHtml + div.innerHTML;
-  });
+  return tmpHtml;
 }
 
 function refresh(index) {
@@ -344,14 +346,14 @@ function refresh(index) {
 function genSubset(tab) {
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
-    subsets[i].checked = document.querySelector(`#${tab} input[name="subset-${i}"]`).checked;
+    subsets[i].checked = document.getElementById(`${tab}-subset-${i}`).checked;
     if (subsets[i].checked) {
       for (var j of subsets[i].subset) {
         tmpSet.add(j);
       }
     }
   }
-  forceMapping = document.querySelector(`#${tab} input[name="force-mapping"]`).checked;
+  forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
   ret = [];
   tmpSet.forEach((val) => {
     if (forceMapping && moegirl2bgm[char_index[val].name] === undefined) {
@@ -363,7 +365,7 @@ function genSubset(tab) {
 }
 
 function reset() {
-  random = document.querySelector(`#tab-score input[name="random"]`);
+  random = document.getElementById("tab-score-random");
   if (random === null) {
     random = false;
   } else {
