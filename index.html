@@ -104,6 +104,10 @@
         color: #fff;
         cursor: pointer;
       }
+
+      .btn {
+        padding: 0.25rem;
+      }
     </style>
   </head>
   <body style="min-width: 350px">
@@ -117,7 +121,7 @@
       </div> -->
         <div style="flex-basis: 800px">
           <h1>
-            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.2.0</sup>
+            <ruby>MoeRanker<rp>(</rp><rt>X P检测器</rt><rp>)</rp></ruby><sup> 1.2.1</sup>
           </h1>
           <p>
             by Zzzyt 2023, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker" target="_blank">Zzzzzzyt/MoeRanker</a><br />
@@ -140,17 +144,21 @@
         <div id="update-history" style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
           <h2>更新日志</h2>
           <p>
+            v1.2.1 (2023-2-18)<br />
+            - 完整版Bangumi 120k数据集<br />
+            - <b>调整按钮权重显示</b><br />
+            - 子集人物按萌百默认排序(拼音)
+          </p>
+          <p>
             v1.2.0 (2023-2-14)<br />
             - <b>全局自动保存进度</b><br />
             - UI微调
           </p>
-
           <p>
             v1.1.1 (2023-2-13):<br />
             - Bangumi 120k数据集(无subject)<br />
             - 顺序做题
           </p>
-
           <p>
             v1.1.0 (2023-2-12):<br />
             - <b>加入预测功能</b><br />
@@ -158,22 +166,19 @@
             - 优化数据集<br />
             - UI微调
           </p>
-
           <p>
             v1.0.3 (2023-2-8):<br />
             - 加入子集：超炮Only，英雄联盟LOL，虚拟歌姬，名侦探柯南，赛马娘，舰队Collection(舰C)，战舰少女(舰R)，碧蓝航线(舰B)，蔚蓝档案，Key社三部曲，宝可梦系列角色，宝可梦，彩虹小马，偶像大师系列，偶像梦幻祭，公主连结Re:Dive，RWBY <br />
             - 加入子集映射百分比背景色提示
           </p>
-
           <p>
             v1.0.2 (2023-2-7): <br />
             - 计算结果添加滚动条<br />
             - 加入结果位置提示文本<br />
             - 加入更新日志一栏<br />
             - 改善文字对比度<br />
-            - 移除长门大<span style="font-weight: bold; color: #11bb11">萌</span>神（太悲惨了） <del>长门有希的消失</del>
+            - 移除长门大<span style="font-weight: bold; color: #11bb11">萌</span>神(太悲惨了) <del>长门有希的消失</del>
           </p>
-
           <p>
             v1.0.1 (2023-2-6): <br />
             - 修正了Bangumi top N子集大小≠N的问题<br />
@@ -181,7 +186,7 @@
           </p>
           <p>
             v1.0.0 (2023-2-5): <br />
-            - 公测开始！<br />
+            - <b>公测开始！</b><br />
             - 添加长门大<span style="font-weight: bold; color: #11bb11">萌</span>神
           </p>
         </div>
@@ -211,17 +216,17 @@
             <button class="form-control btn btn-primary" onclick="skip();">跳过</button>
           </div>
           <br />
-          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-16);">-5</button>
-          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-8);">-4</button>
-          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-4);">-3</button>
+          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-12);">-12</button>
+          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-8);">-8</button>
+          <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-4);">-4</button>
           <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-2);">-2</button>
           <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="score(-1);">-1</button>
           <button class="btn btn-warning" style="width: 50px; margin-bottom: 8px" onclick="score(0);">0</button>
-          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(1);">1</button>
-          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(2);">2</button>
-          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(4);">3</button>
-          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(8);">4</button>
-          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(16);">5</button>
+          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(1);">+1</button>
+          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(2);">+2</button>
+          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(4);">+4</button>
+          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(8);">+8</button>
+          <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="score(12);">+12</button>
           <div id="loading-output" style="margin-top: 20px"></div>
           <div id="images" style="width: 100%; margin-bottom: 20px; margin-top: 20px; max-width: 600px; min-height: 500px; display: flex; flex-wrap: wrap"></div>
         </div>
