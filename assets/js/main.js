@@ -48,6 +48,7 @@ var attr2id = new Map();
 var rating = null;
 var ratingHistory = null;
 var stat = null;
+var images = null;
 
 const useStorage = storageAvailable("localStorage");
 
@@ -207,7 +208,16 @@ var fetchImportance = fetch("data/importance.json")
     importanceTmp = data;
   });
 
-Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).then(() => {
+var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
+  .then((response) => response.json())
+  .then((data) => {
+    const msg = `image preload map loaded: length=${Object.keys(data).length}`;
+    printToPage(msg);
+    console.log(msg);
+    images = data;
+  });
+
+Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchImageMap]).then(() => {
   for (var i = 0; i < attr_index.length; i++) {
     importance.push(importanceTmp[attr_index[i].name]);
   }
@@ -246,8 +256,21 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).th
   refresh();
 });
 
-function name2url(name) {
+function name2URL(name) {
   return name.replace(" ", "_");
+}
+
+function getImageURL(bid, type) {
+  if (type === undefined) {
+    type = "medium";
+  }
+  if (type === "medium" && images !== null) {
+    var url = images[bid];
+    if (url !== undefined) {
+      return "https://lain.bgm.tv/r/400/pic/crt/l/" + url;
+    }
+  }
+  return `https://api.bgm.tv/v0/characters/${bid}/image?type=${type}`;
 }
 
 function displaySubsets() {
@@ -307,7 +330,7 @@ function refresh(index) {
   const char = char_index[id];
   const nameElement = document.getElementById("name");
   nameElement.innerText = char.name;
-  nameElement.href = "https://zh.moegirl.org.cn/" + name2url(char.name);
+  nameElement.href = "https://zh.moegirl.org.cn/" + name2URL(char.name);
   document.getElementById("progress-text").innerText = `${index + 1} / ${currentSubset.length}`;
 
   const oldPreload = document.head.getElementsByClassName("char-image-preloader");
@@ -321,7 +344,7 @@ function refresh(index) {
     if (ids === undefined) continue;
     for (var j of ids) {
       const preloadLink = document.createElement("link");
-      preloadLink.href = `https://api.bgm.tv/v0/characters/${j}/image?type=medium`;
+      preloadLink.href = getImageURL(j, "medium");
       preloadLink.rel = "preload";
       preloadLink.as = "image";
       preloadLink.class = "char-image-preloader";
@@ -334,7 +357,7 @@ function refresh(index) {
   if (ids !== undefined) {
     for (var j of ids) {
       tmp += `<a href="https://bgm.tv/character/${j}" target="_blank">
-      <img src="https://api.bgm.tv/v0/characters/${j}/image?type=medium" alt="人物图片" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+      <img src="${getImageURL(j, "medium")}" alt="人物图片" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
   } else {
     tmp += `<a href="https://bgm.tv/character/13004" target="_blank">
@@ -486,7 +509,7 @@ function compute() {
     attr = attr_index[result[i].attr];
     var href = "";
     if (attr.article !== undefined) {
-      href = ` href="https://zh.moegirl.org.cn/${name2url(attr.article)}"`;
+      href = ` href="https://zh.moegirl.org.cn/${name2URL(attr.article)}"`;
     }
     if (Math.abs(result[i].rating) < 0.05) continue;
     const name = `<a${href} target="_blank">${attr.name}</a>`;
@@ -588,7 +611,7 @@ function resetPrediction() {
       const score = cur.scores[j];
       const tmp3 = attr_index[score.attr].name;
       if (attr_index[score.attr].article !== undefined) {
-        tmp2 += `<a href="https://zh.moegirl.org.cn/${name2url(attr_index[score.attr].article)}" target="_blank">${tmp3}</a> `;
+        tmp2 += `<a href="https://zh.moegirl.org.cn/${name2URL(attr_index[score.attr].article)}" target="_blank">${tmp3}</a> `;
       } else {
         tmp2 += tmp3 + " ";
       }
@@ -596,7 +619,7 @@ function resetPrediction() {
       tmp2 += `${colorspan2(score.score / cur.impsum, -1, 1)}`;
     }
     tmp += `<tr><td>${i + 1}</td>
-    <td><a href="https://zh.moegirl.org.cn/${name2url(char_index[cur.id].name)}" target="_blank">${char_index[cur.id].name}</a></td>
+    <td><a href="https://zh.moegirl.org.cn/${name2URL(char_index[cur.id].name)}" target="_blank">${char_index[cur.id].name}</a></td>
     <td style="background-color:${colorize(cur.score, min, max)}">${cur.score.toFixed(2)}</td><td>${tmp2}</td></tr>`;
   }
   document.getElementById("prediction-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
