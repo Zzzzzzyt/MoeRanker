@@ -10,20 +10,26 @@ const subsets = [
   { name: "railgun_subset", display: "超炮Only", checked: false },
   { name: "arknights_subset", display: "明日方舟", checked: false },
   { name: "genshin_subset", display: "原神", checked: false },
+  { name: "honkai3_subset", display: "崩坏3", checked: false },
+  { name: "honkai_starrail_subset", display: "崩坏：星穹铁道", checked: false },
   { name: "fate_subset", display: "Fate系列", checked: false },
   { name: "jojo_subset", display: "JOJO系列", checked: false },
   { name: "gundam_subset", display: "高达系列", checked: false },
   { name: "naruto_subset", display: "火影忍者", checked: false },
   { name: "furry_subset", display: "兽娘属性", checked: false },
-  { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
   { name: "lol_subset", display: "英雄联盟LOL", checked: false },
   { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
   { name: "conan_subset", display: "名侦探柯南", checked: false },
+  { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
+  { name: "bangdream_subset", display: "BanG Dream!系列", checked: false },
+  { name: "revue_subset", display: "少女☆歌剧", checked: false },
   { name: "derby_subset", display: "赛马娘", checked: false },
   { name: "kanC_subset", display: "舰队Collection(舰C)", checked: false },
   { name: "kanR_subset", display: "战舰少女(舰R)", checked: false },
   { name: "kanB_subset", display: "碧蓝航线(舰B)", checked: false },
   { name: "blue_archive_subset", display: "蔚蓝档案", checked: false },
+  { name: "girls_frontline_subset", display: "少女前线", checked: false },
+  { name: "GUP_subset", display: "少女与战车", checked: false },
   { name: "key3_subset", display: "Key社三部曲", checked: false },
   { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false },
   { name: "pokemon_subset", display: "宝可梦", checked: false },
@@ -53,9 +59,24 @@ var images = null;
 const useStorage = storageAvailable("localStorage");
 
 function packState() {
-  const ratingHistory2 = JSON.stringify(ratingHistory);
-  const currentSubset2 = JSON.stringify(currentSubset);
+  // pack rating history
+  var ratingHistory2 = [];
+  ratingHistory.forEach((entry) => {
+    const name = char_index[entry.id].name;
+    ratingHistory2.push({ name: name, score: entry.score });
+  });
+  ratingHistory2 = JSON.stringify(ratingHistory2);
   const currentIndex2 = currentIndex.toString();
+
+  // pack current subset
+  var currentSubset2 = [];
+  currentSubset.forEach((id) => {
+    const name = char_index[id].name;
+    currentSubset2.push(name);
+  });
+  currentSubset2 = JSON.stringify(currentSubset2);
+
+  // pack checked subsets
   const checkedSubsets = [];
   const list = document.querySelector("#score-panel .subset-list").querySelectorAll('input[id*="subset"]');
   for (node of list) {
@@ -66,8 +87,9 @@ function packState() {
     }
   }
   const checkedSubsets2 = JSON.stringify(checkedSubsets);
+
   const pack = { ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets2 };
-  console.log("packed:", pack);
+  // console.log("packed:", pack);
   return pack;
 }
 
@@ -83,7 +105,7 @@ function saveState() {
     console.error(e);
     return false;
   }
-  console.log("state saved");
+  // console.log("state saved");
   return true;
 }
 
@@ -103,6 +125,8 @@ function loadState() {
 
 function unpackState(pack) {
   console.log("unpacking:", pack);
+
+  // unpack checked subsets
   if (pack.checkedSubsets) {
     const checkedSubsets = JSON.parse(pack.checkedSubsets);
     for (var i = 0; i < subsets.length; i++) {
@@ -119,29 +143,54 @@ function unpackState(pack) {
   }
   const ratingHistory2 = JSON.parse(pack.ratingHistory);
   const currentSubset2 = JSON.parse(pack.currentSubset);
-  const currentIndex2 = parseInt(pack.currentIndex);
+  var currentIndex2 = parseInt(pack.currentIndex);
+
+  // reset stat
   stat = [];
   rating = [];
   for (var i = 0; i < attr_index.length; i++) {
     rating.push(null);
     stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
   }
-  for (entry of ratingHistory2) {
-    const id = entry.id;
+
+  // unpack rating history
+  ratingHistory = [];
+  currentIndex = currentIndex2;
+  for (var i = 0; i < ratingHistory2.length; i++) {
+    const entry = ratingHistory2[i];
+    const name = entry.name;
+    if (!char2id.has(name)) {
+      console.warn(`character ${name} missing. Did index change?`);
+      if (i <= currentIndex2) currentIndex--;
+      continue;
+    }
+
+    const id = char2id.get(name);
     const val = entry.score;
-    for (var i = 0; i < attr_index.length; i++) {
-      if (char2map[id].has(i)) {
-        stat[i].test.push(val);
-        stat[i].test_sum += val;
+    ratingHistory.push({ id: id, score: val });
+
+    // recalculate stat
+    for (var j = 0; j < attr_index.length; j++) {
+      if (char2map[id].has(j)) {
+        stat[j].test.push(val);
+        stat[j].test_sum += val;
       } else {
-        stat[i].control.push(val);
-        stat[i].control_sum += val;
+        stat[j].control.push(val);
+        stat[j].control_sum += val;
       }
     }
   }
-  ratingHistory = ratingHistory2;
-  currentSubset = currentSubset2;
-  currentIndex = currentIndex2;
+
+  // unpack current subset
+  currentSubset = [];
+  currentSubset2.forEach((name) => {
+    if (!char2id.has(name)) {
+      console.warn(`character ${name} missing. Did index change?`);
+      return;
+    }
+    currentSubset.push(char2id.get(name));
+  });
+
   compute();
   return true;
 }
@@ -320,7 +369,7 @@ function refresh(index) {
     document.getElementById("progress-text").innerText = `${currentSubset.length} / ${currentSubset.length}`;
     nameElement.href = "https://www.bilibili.com/bangumi/play/ep29854?t=1292";
     document.getElementById("images").innerHTML = `<a id="bangumi-link" href="https://bgm.tv/character/302" target="_blank">
-    <img src="assets/img/omedetou.gif" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+    <img src="assets/img/omedetou.gif" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     return;
   }
   if (index === undefined) {
@@ -332,6 +381,12 @@ function refresh(index) {
   nameElement.innerText = char.name;
   nameElement.href = "https://zh.moegirl.org.cn/" + name2URL(char.name);
   document.getElementById("progress-text").innerText = `${index + 1} / ${currentSubset.length}`;
+
+  debug = `${char_index[id].name}: `;
+  for (attr of char2attr[id]) {
+    debug += attr_index[attr].name + " ";
+  }
+  console.log(debug);
 
   const oldPreload = document.head.getElementsByClassName("char-image-preloader");
   for (i of oldPreload) {
@@ -354,14 +409,15 @@ function refresh(index) {
 
   const ids = moegirl2bgm[char.name];
   var tmp = "";
+  const lim = Number.parseInt(document.getElementById("tab-score-k-image").value);
   if (ids !== undefined) {
-    for (var j of ids) {
-      tmp += `<a href="https://bgm.tv/character/${j}" target="_blank">
-      <img src="${getImageURL(j, "medium")}" alt="人物图片" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+    for (var j = 0; j < ids.length && j < lim; j++) {
+      tmp += `<a href="https://bgm.tv/character/${ids[j]}" target="_blank">
+      <img src="${getImageURL(ids[j], "medium")}" alt="人物图片" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
   } else {
     tmp += `<a href="https://bgm.tv/character/13004" target="_blank">
-      <img src="assets/img/akarin.jpg" alt="无映射" style="max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+      <img src="assets/img/akarin.jpg" alt="无映射" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
   document.getElementById("images").innerHTML = tmp;
 }
