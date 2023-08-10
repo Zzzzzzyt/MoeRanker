@@ -134,7 +134,7 @@
           <ruby>MoeRanker<rp>(</rp>
             <rt>X P检测器</rt>
             <rp>)</rp>
-          </ruby><sup> 1.3.0</sup>
+          </ruby><sup> 1.3.1</sup>
         </h1>
         <p>
           by Zzzyt 2023, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker"
@@ -172,6 +172,10 @@
       <div id="update-history"
         style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
         <h2>更新日志</h2>
+        <p>
+          v1.3.1 (2023-8-10)<br>
+          - 调整权重数据
+        </p>
         <p>
           v1.3.0 (2023-8-9)<br>
           - <b>数据集更新：萌娘百科数据截止至2023/8/3 Bangumi数据截止至2023/7/30</b><br />
@@ -288,7 +292,8 @@
           </div>
           <div class="input-group" style="margin-bottom: 10px; max-width:170px">
             <span class="input-group-text"><label for="tab-score-k-image">显示前</label></span>
-            <input id="tab-score-k-image" type="number" min=0 max=20 class="form-control" value="1" onchange="refresh();"/>
+            <input id="tab-score-k-image" type="number" min=0 max=20 class="form-control" value="1"
+              onchange="refresh();" />
             <span class="input-group-text"><label for="tab-score-k-image">张</label></span>
           </div>
         </div>
@@ -343,5 +348,17 @@
   </div>
 </body>
 <script src="assets/js/main.js"></script>
+<!-- <script>
+  fetch("data/test/test_packed_data3.json")
+    .then((res) => res.json())
+    .then((res) => {
+      unpackState(res);
+      refresh()
+      // setTimeout(() => {
+      //   changeTab();
+      //   resetPrediction();
+      // }, 500);
+    });
+</script> -->
 
 </html>
