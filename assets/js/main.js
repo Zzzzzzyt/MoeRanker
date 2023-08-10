@@ -12,6 +12,7 @@ const subsets = [
   { name: "genshin_subset", display: "原神", checked: false },
   { name: "honkai3_subset", display: "崩坏3", checked: false },
   { name: "honkai_starrail_subset", display: "崩坏：星穹铁道", checked: false },
+  { name: "onmyoji_subset", display: "阴阳师", checked: false },
   { name: "fate_subset", display: "Fate系列", checked: false },
   { name: "jojo_subset", display: "JOJO系列", checked: false },
   { name: "gundam_subset", display: "高达系列", checked: false },
