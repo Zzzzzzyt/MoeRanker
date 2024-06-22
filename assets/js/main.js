@@ -514,11 +514,11 @@ function score(val) {
       stat[i].control_sum += val;
     }
   }
+  currentIndex++;
+  refresh();
   setTimeout(() => {
-    compute();
-    currentIndex++;
-    refresh();
     saveState();
+    compute();
   });
 }
 
