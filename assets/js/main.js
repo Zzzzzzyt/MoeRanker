@@ -7,7 +7,7 @@ const subsets = [
   { name: "touhou_new_subset", display: "东方project新作", checked: false },
   { name: "touhou_old_subset", display: "东方project旧作", checked: false },
   { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false },
-  { name: "railgun_subset", display: "超炮Only", checked: false },
+  // { name: "railgun_subset", display: "超炮Only", checked: false },
   { name: "arknights_subset", display: "明日方舟", checked: false },
   { name: "genshin_subset", display: "原神", checked: false },
   { name: "honkai3_subset", display: "崩坏3", checked: false },
@@ -17,29 +17,36 @@ const subsets = [
   { name: "jojo_subset", display: "JOJO系列", checked: false },
   { name: "gundam_subset", display: "高达系列", checked: false },
   { name: "naruto_subset", display: "火影忍者", checked: false },
-  { name: "furry_subset", display: "兽娘属性", checked: false },
-  { name: "lol_subset", display: "英雄联盟LOL", checked: false },
+  { name: "bleach_subset", display: "死神(BLEACH)", checked: false },
+  { name: "madoka_subset", display: "魔法少女小圆", checked: false },
+  { name: "AOT_subset", display: "进击的巨人", checked: false },
+  { name: "jujutsu_subset", display: "咒术回战", checked: false },
+  // { name: "lol_subset", display: "英雄联盟LOL", checked: false },
   { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
-  { name: "conan_subset", display: "名侦探柯南", checked: false },
+  // { name: "conan_subset", display: "名侦探柯南", checked: false },
   { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
   { name: "bangdream_subset", display: "BanG Dream!系列", checked: false },
-  { name: "revue_subset", display: "少女☆歌剧", checked: false },
+  // { name: "revue_subset", display: "少女☆歌剧", checked: false },
   { name: "derby_subset", display: "赛马娘", checked: false },
-  { name: "kanC_subset", display: "舰队Collection(舰C)", checked: false },
-  { name: "kanR_subset", display: "战舰少女(舰R)", checked: false },
-  { name: "kanB_subset", display: "碧蓝航线(舰B)", checked: false },
+  { name: "kancolle_subset", display: "舰队Collection", checked: false },
+  { name: "kanR_subset", display: "战舰少女", checked: false },
+  { name: "azur_lane_subset", display: "碧蓝航线", checked: false },
   { name: "blue_archive_subset", display: "蔚蓝档案", checked: false },
-  { name: "girls_frontline_subset", display: "少女前线", checked: false },
-  { name: "GUP_subset", display: "少女与战车", checked: false },
+  // { name: "girls_frontline_subset", display: "少女前线", checked: false },
+  // { name: "GUP_subset", display: "少女与战车", checked: false },
   { name: "key3_subset", display: "Key社三部曲", checked: false },
-  { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false },
-  { name: "pokemon_subset", display: "宝可梦", checked: false },
+  // { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false },
+  // { name: "pokemon_subset", display: "宝可梦", checked: false },
   { name: "pony_subset", display: "彩虹小马", checked: false },
   { name: "idolmaster_subset", display: "偶像大师系列", checked: false },
   { name: "ES_subset", display: "偶像梦幻祭", checked: false },
   { name: "PCR_subset", display: "公主连结Re:Dive", checked: false },
-  { name: "RWBY_subset", display: "RWBY", checked: false },
-  { name: "zzzyt_subset", display: "Zzzyt私货(测试用)", checked: false },
+  { name: "housamo_subset", display: "炼金工房系列", checked: false },
+  { name: "atelier_subset", display: "东京放课后召唤师", checked: false },
+  { name: "kamen_rider_subset", display: "假面骑士系列", checked: false },
+  { name: "danganronpa_subset", display: "弹丸论破", checked: false },
+  { name: "persona_subset", display: "女神异闻录系列", checked: false },
+  // { name: "RWBY_subset", display: "RWBY", checked: false },
 ];
 
 var currentIndex = 0;
@@ -63,7 +70,7 @@ function packState() {
   // pack rating history
   var ratingHistory2 = [];
   ratingHistory.forEach((entry) => {
-    const name = char_index[entry.id].name;
+    const name = char_index[entry.id];
     ratingHistory2.push({ name: name, score: entry.score });
   });
   ratingHistory2 = JSON.stringify(ratingHistory2);
@@ -72,7 +79,7 @@ function packState() {
   // pack current subset
   var currentSubset2 = [];
   currentSubset.forEach((id) => {
-    const name = char_index[id].name;
+    const name = char_index[id];
     currentSubset2.push(name);
   });
   currentSubset2 = JSON.stringify(currentSubset2);
@@ -196,6 +203,31 @@ function unpackState(pack) {
   return true;
 }
 
+function downloadState() {
+  blob = new Blob([JSON.stringify(packState())], { type: "application/json" });
+  url = URL.createObjectURL(blob);
+  const element = document.createElement("a");
+  element.setAttribute("href", url);
+  element.setAttribute("download", "state.json");
+  element.style.display = "none";
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+function uploadState() {
+  const element = document.getElementById("upload_state");
+  if (element.files.length == 1) {
+    const file = element.files[0];
+    console.log("file uploaded:", file);
+    file.text().then((text) => {
+      const pack = JSON.parse(text);
+      unpackState(pack);
+      refresh();
+    });
+  }
+}
+
 function printToPage(msg) {
   document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
 }
@@ -206,11 +238,11 @@ var fetchMain = fetch("data/data_min.json")
     ({ char_index, attr_index, char2attr } = data);
     console.log(char_index);
     for (var i = 0; i < char_index.length; i++) {
-      char2id.set(char_index[i].name, i);
+      char2id.set(char_index[i], i);
       char2map.push(new Set(char2attr[i]));
     }
     for (var i = 0; i < attr_index.length; i++) {
-      attr2id.set(attr_index[i].name, i);
+      attr2id.set(attr_index[i], i);
     }
     const msg = `main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`;
     printToPage(msg);
@@ -269,7 +301,7 @@ var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
 
 Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchImageMap]).then(() => {
   for (var i = 0; i < attr_index.length; i++) {
-    importance.push(importanceTmp[attr_index[i].name]);
+    importance.push(importanceTmp[attr_index[i]]);
   }
   displaySubsets();
   const loaded = loadState();
@@ -350,7 +382,7 @@ function genSubsetlist(tab) {
   for (var i = 0; i < subsets.length; i++) {
     var cnt = 0;
     for (var j of subsets[i].subset) {
-      if (moegirl2bgm[char_index[j].name] !== undefined) cnt++;
+      if (moegirl2bgm[char_index[j]] !== undefined) cnt++;
     }
     tmpHtml += `<div class="form-check">
     <input class="form-check-input" type="checkbox" id="${tab}-subset-${i}" ${subsets[i].checked ? "checked" : ""}
@@ -379,13 +411,13 @@ function refresh(index) {
   const id = currentSubset[index];
   const char = char_index[id];
   const nameElement = document.getElementById("name");
-  nameElement.innerText = char.name;
-  nameElement.href = "https://zh.moegirl.org.cn/" + name2URL(char.name);
+  nameElement.innerText = char;
+  nameElement.href = "https://zh.moegirl.org.cn/" + name2URL(char);
   document.getElementById("progress-text").innerText = `${index + 1} / ${currentSubset.length}`;
 
-  debug = `${char_index[id].name}: `;
+  debug = `${char_index[id]}: `;
   for (attr of char2attr[id]) {
-    debug += attr_index[attr].name + " ";
+    debug += attr_index[attr] + " ";
   }
   console.log(debug);
 
@@ -396,7 +428,7 @@ function refresh(index) {
   for (var i = currentIndex - 2; i <= currentIndex + 5; i++) {
     if (i < 0 || i >= currentSubset.length) continue;
     const mid = currentSubset[i];
-    const ids = moegirl2bgm[char_index[mid].name];
+    const ids = moegirl2bgm[char_index[mid]];
     if (ids === undefined) continue;
     for (var j of ids) {
       const preloadLink = document.createElement("link");
@@ -408,7 +440,7 @@ function refresh(index) {
     }
   }
 
-  const ids = moegirl2bgm[char.name];
+  const ids = moegirl2bgm[char];
   var tmp = "";
   const lim = Number.parseInt(document.getElementById("tab-score-k-image").value);
   if (ids !== undefined) {
@@ -436,7 +468,7 @@ function genSubset(tab) {
   forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
   ret = [];
   tmpSet.forEach((val) => {
-    if (forceMapping && moegirl2bgm[char_index[val].name] === undefined) {
+    if (forceMapping && moegirl2bgm[char_index[val]] === undefined) {
       return;
     }
     ret.push(val);
@@ -471,7 +503,7 @@ function reset() {
 
 function score(val) {
   id = currentSubset[currentIndex];
-  console.log(`score ${val} for ${char_index[id].name}`);
+  console.log(`score ${val} for ${char_index[id]}`);
   ratingHistory.push({ id: id, score: val });
   for (var i = 0; i < attr_index.length; i++) {
     if (char2map[id].has(i)) {
@@ -505,7 +537,7 @@ function revert() {
   }
   // console.log(ratingHistory);
   const { id, score } = ratingHistory.pop();
-  console.log(`revert ${score} for ${char_index[id].name}`);
+  console.log(`revert ${score} for ${char_index[id]}`);
   if (score !== undefined) {
     for (var i = 0; i < attr_index.length; i++) {
       if (char2map[id].has(i)) {
@@ -569,7 +601,7 @@ function compute() {
       href = ` href="https://zh.moegirl.org.cn/${name2URL(attr.article)}"`;
     }
     if (Math.abs(result[i].rating) < 0.05) continue;
-    const name = `<a${href} target="_blank">${attr.name}</a>`;
+    const name = `<a${href} target="_blank">${attr}</a>`;
     cnt++;
     tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
     <td style="background: ${colorize(result[i].rating, 4)}">${result[i].rating.toFixed(2)}</td>
@@ -666,7 +698,7 @@ function resetPrediction() {
     var tmp2 = "";
     for (var j = 0; j < cur.scores.length; j++) {
       const score = cur.scores[j];
-      const tmp3 = attr_index[score.attr].name;
+      const tmp3 = attr_index[score.attr];
       if (attr_index[score.attr].article !== undefined) {
         tmp2 += `<a href="https://zh.moegirl.org.cn/${name2URL(attr_index[score.attr].article)}" target="_blank">${tmp3}</a> `;
       } else {
@@ -676,7 +708,7 @@ function resetPrediction() {
       tmp2 += `${colorspan2(score.score / cur.impsum, -1, 1)}`;
     }
     tmp += `<tr><td>${i + 1}</td>
-    <td><a href="https://zh.moegirl.org.cn/${name2URL(char_index[cur.id].name)}" target="_blank">${char_index[cur.id].name}</a></td>
+    <td><a href="https://zh.moegirl.org.cn/${name2URL(char_index[cur.id])}" target="_blank">${char_index[cur.id]}</a></td>
     <td style="background-color:${colorize(cur.score, min, max)}">${cur.score.toFixed(2)}</td><td>${tmp2}</td></tr>`;
   }
   document.getElementById("prediction-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
