@@ -431,12 +431,8 @@ function refresh(index) {
     const ids = moegirl2bgm[char_index[mid]];
     if (ids === undefined) continue;
     for (var j of ids) {
-      const preloadLink = document.createElement("link");
-      preloadLink.href = getImageURL(j, "medium");
-      preloadLink.rel = "preload";
-      preloadLink.as = "image";
-      preloadLink.class = "char-image-preloader";
-      document.head.appendChild(preloadLink);
+      const img = new Image();
+      img.src = getImageURL(j, "medium");
     }
   }
 
@@ -516,10 +512,8 @@ function score(val) {
   }
   currentIndex++;
   refresh();
-  setTimeout(() => {
-    saveState();
-    compute();
-  });
+  scheduleSaveState();
+  // compute();
 }
 
 function skip() {
@@ -529,7 +523,7 @@ function skip() {
   id = currentSubset[currentIndex];
   ratingHistory.push({ id: id, score: null });
   currentIndex++;
-  saveState();
+  scheduleSaveState();
   refresh();
 }
 
@@ -551,7 +545,7 @@ function revert() {
       }
     }
   }
-  compute();
+  // compute();
   currentIndex--;
   saveState();
   refresh();
@@ -618,9 +612,20 @@ function compute() {
     document.getElementById("ranking-table").style.display = "block";
     document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
   }
-  lastCompute = -1;
   console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
 }
+
+function makeDebounce(callback, wait) {
+  let timeoutId = null;
+  return (...args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      callback(...args);
+    }, wait);
+  };
+}
+
+const scheduleSaveState = makeDebounce(saveState, 200);
 
 function predict(subset) {
   var prediction = [];

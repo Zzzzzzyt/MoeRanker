@@ -179,6 +179,8 @@
         <p>
           v1.4.1 (2024-6-22)<br />
           - 优化评分性能
+          - 计算改为手动
+          - UI微调
         </p>
         <p>
           <b>v1.4.0 (2024-6-22)</b><br>
@@ -312,7 +314,8 @@
             <span class="input-group-text"><label for="tab-score-k-image">张</label></span>
           </div>
         </div>
-        <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="reset();">生成子集</button>
+        <button class="form-control btn btn-success" style="margin-bottom: 10px; height: 68px;"
+          onclick="reset();">生成子集</button>
         <button class="form-control btn btn-primary" style="margin-bottom: 10px"
           onclick="downloadState();">下载当前进度</button>
         <label class="form-control btn btn-primary" style="margin-bottom: 10px" for="upload_state">上传保存的进度</label>
@@ -322,6 +325,8 @@
       </div>
       <div id="result-panel"
         style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 850px; overflow: auto auto; display: none">
+        <button class="form-control btn btn-success" style="margin-bottom: 10px; height: 68px;"
+          onclick="compute();">计算结果</button>
         <p id="ranking-hint"
           style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">
           &nbsp;&nbsp;&nbsp;结果将显示在这里&nbsp;&nbsp;&nbsp;</p>
