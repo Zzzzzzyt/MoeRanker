@@ -117,10 +117,6 @@
     .input-group label:hover {
       cursor: pointer;
     }
-
-    #name {
-      font-size: max(min(8vw, 36pt), 22pt);
-    }
   </style>
 </head>
 
@@ -135,7 +131,8 @@
       </div> -->
       <div style="flex-basis: 800px">
         <h1>
-          <ruby>MoeRanker<rp>(</rp>
+          <ruby><b>MoeRanker</b>
+            <rp>(</rp>
             <rt>X P检测器</rt>
             <rp>)</rp>
           </ruby><sup> 1.4.1</sup>
@@ -147,28 +144,30 @@
             target="_blank">Bangumi</a>数据截止至2024/6/21 <br />感谢广大词条编辑者的付出ヾ(•ω•`)o
         </p>
         <p>
-          使用说明： 选择熟悉的作品，点击生成子集，开始评分。结果会在样本数足够时显示，实时更新，随时可以停止评分。<br />
+          使用说明： 选择熟悉的作品，点击启动，开始评分。随时可以点击刷新结果。<br />
           在<span class="number-red">-12</span>到<span class="number-green">+12</span>之间为人物评分， 喜爱为<span
             class="number-green">正</span>，厌恶为<span class="number-red">负</span>。<br />
           结果表格中评分为正则该<ruby>属性<rp>(</rp>
             <rt>X P</rt>
             <rp>)</rp>
-          </ruby>为正面，反之为反面，绝对值代表确信度。<br />
+          </ruby>为正面，反之为反面，绝对值代表确信度。
+        </p>
+        <p>
+          <b>注意：<span class="number-red">-12</span>和<span
+              class="number-green">+12</span>的权重很高，请勿滥用(v1.2.1起显示数值即为实际权重)。</b>
+          若无感，选0或±1，不认识（不能评价）则跳过，<b>但注意过度跳过会造成样本不足。</b>
+        </p>
+        <p>
           图片来自bangumi自动映射，<span
             style="font-weight: bold; color: #ff0000">可能出现无图，多图，错图现象，仅供参考，请以人名（萌百URL）为准。</span>启用<i>必须有图像</i>将保证至少有一张备选图片。
           提高前k张设置可以看到更多候选图片。<br />
-          如果你<ruby>对指定的子集有充分了解<rp>(</rp>
+          如果你对指定的<ruby>子集有充分了解<rp>(</rp>
             <rt>二次元浓度极高</rt>
             <rp>)</rp>
           </ruby>，请尽量关闭该选项以提高样本数。子集名称后标注了(映射数/总人数)，可供参考。点击人物和<ruby>属性<rp>(</rp>
             <rt>X P</rt>
             <rp>)</rp>
-          </ruby>的文字链接将跳转至萌百对应页面，点击图片将跳转至Bangumi。
-        </p>
-        <p>
-          <b>注意：<span class="number-red">-12</span>和<span
-              class="number-green">+12</span>的权重很高，请勿滥用(v1.2.1起显示数值即为实际权重)。</b>
-          若无感，选0或±1，不认识（不能评价）则跳过，<b>但注意过度跳过会造成样本不足。</b><br />
+          </ruby>的文字链接将跳转至萌百对应页面，点击图片将跳转至Bangumi。<br />
           有图片映射错误现象或任何问题，欢迎在GitHub上<a href="https://github.com/Zzzzzzyt/MoeRanker/issues/new"
             target="_blank">发Issue</a>。
         </p>
@@ -177,9 +176,9 @@
         style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 450px; padding-left: 20px">
         <h2>更新日志</h2>
         <p>
-          v1.4.1 (2024-6-22)<br />
-          - 优化评分性能
-          - 计算改为手动
+          v1.4.1 (2024-6-24)<br />
+          - 优化评分性能<br />
+          - 计算改为手动<br />
           - UI微调
         </p>
         <p>
@@ -270,7 +269,7 @@
   <div id="tab-score" class="container">
     <div id="score-panel" style="display: flex; flex-wrap: wrap">
       <div style="flex-grow: 1; width: 600px">
-        <p>
+        <p style="font-size: max(min(8vw, 36pt), 22pt);height: 3em;">
           <a href="https://zh.moegirl.org.cn/不要停下来啊！" id="name" target="_blank">加载中</a>
         </p>
         <div class="input-group" style="max-width: 300px">
@@ -315,7 +314,7 @@
           </div>
         </div>
         <button class="form-control btn btn-success" style="margin-bottom: 10px; height: 68px;"
-          onclick="reset();">生成子集</button>
+          onclick="reset();">启动！！</button>
         <button class="form-control btn btn-primary" style="margin-bottom: 10px"
           onclick="downloadState();">下载当前进度</button>
         <label class="form-control btn btn-primary" style="margin-bottom: 10px" for="upload_state">上传保存的进度</label>
@@ -326,10 +325,10 @@
       <div id="result-panel"
         style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 850px; overflow: auto auto; display: none">
         <button class="form-control btn btn-success" style="margin-bottom: 10px; height: 68px;"
-          onclick="compute();">计算结果</button>
+          onclick="compute();">刷新结果</button>
         <p id="ranking-hint"
           style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">
-          &nbsp;&nbsp;&nbsp;结果将显示在这里&nbsp;&nbsp;&nbsp;</p>
+          &nbsp;&nbsp;&nbsp;数据不足，给我做题&nbsp;&nbsp;&nbsp;</p>
         <table id="ranking-table" class="table table-bordered" style="min-width: 300px; display: none">
           <thead>
             <th scope="col">No.</th>
@@ -373,17 +372,5 @@
   </div>
 </body>
 <script src="assets/js/main.js"></script>
-<!-- <script>
-  fetch("data/test/test_packed_data3.json")
-    .then((res) => res.json())
-    .then((res) => {
-      unpackState(res);
-      refresh()
-      // setTimeout(() => {
-      //   changeTab();
-      //   resetPrediction();
-      // }, 500);
-    });
-</script> -->
 
 </html>
