@@ -1,3 +1,5 @@
+const LATEST_FORMAT = "v2";
+
 const subsets = [
   { name: "*", display: "全部", checked: false },
   { name: "bgm200_subset", display: "Bangumi top 200", checked: true },
@@ -53,15 +55,15 @@ var currentIndex = 0;
 var currentSubset = null;
 
 var char_index, attr_index, char2attr;
+var attr2article;
 var importanceTmp;
 var importance = [];
-var char2map = [];
+var char2set = [];
 var moegirl2bgm;
 var char2id = new Map();
 var attr2id = new Map();
 var rating = null;
 var ratingHistory = null;
-var stat = null;
 var images = null;
 
 const useStorage = storageAvailable("localStorage");
@@ -96,39 +98,9 @@ function packState() {
   }
   const checkedSubsets2 = JSON.stringify(checkedSubsets);
 
-  const pack = { ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets2 };
+  const pack = { dataFormat: LATEST_FORMAT, ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets2 };
   // console.log("packed:", pack);
   return pack;
-}
-
-function saveState() {
-  if (!useStorage) return false;
-  try {
-    const pack = packState();
-    window.localStorage.setItem("ratingHistory", pack.ratingHistory);
-    window.localStorage.setItem("currentSubset", pack.currentSubset);
-    window.localStorage.setItem("currentIndex", pack.currentIndex);
-    window.localStorage.setItem("checkedSubsets", pack.checkedSubsets);
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-  // console.log("state saved");
-  return true;
-}
-
-function loadState() {
-  if (!useStorage) return false;
-  try {
-    var ratingHistory2 = window.localStorage.getItem("ratingHistory");
-    var currentSubset2 = window.localStorage.getItem("currentSubset");
-    var currentIndex2 = window.localStorage.getItem("currentIndex");
-    var checkedSubsets = window.localStorage.getItem("checkedSubsets");
-    return unpackState({ ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets });
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
 }
 
 function unpackState(pack) {
@@ -149,16 +121,19 @@ function unpackState(pack) {
   if (!(pack.ratingHistory && pack.currentSubset && pack.currentIndex)) {
     return false;
   }
+  const packFormat = pack.dataFormat;
   const ratingHistory2 = JSON.parse(pack.ratingHistory);
   const currentSubset2 = JSON.parse(pack.currentSubset);
   var currentIndex2 = parseInt(pack.currentIndex);
 
-  // reset stat
-  stat = [];
+  if (!pack.dataFormat) {
+    console.log("Old packed data detected");
+    upgradeRatingHistory(ratingHistory2);
+  }
+
   rating = [];
   for (var i = 0; i < attr_index.length; i++) {
     rating.push(null);
-    stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
   }
 
   // unpack rating history
@@ -176,17 +151,6 @@ function unpackState(pack) {
     const id = char2id.get(name);
     const val = entry.score;
     ratingHistory.push({ id: id, score: val });
-
-    // recalculate stat
-    for (var j = 0; j < attr_index.length; j++) {
-      if (char2map[id].has(j)) {
-        stat[j].test.push(val);
-        stat[j].test_sum += val;
-      } else {
-        stat[j].control.push(val);
-        stat[j].control_sum += val;
-      }
-    }
   }
 
   // unpack current subset
@@ -201,6 +165,38 @@ function unpackState(pack) {
 
   compute();
   return true;
+}
+
+function saveState() {
+  if (!useStorage) return false;
+  try {
+    const pack = packState();
+    window.localStorage.setItem("dataFormat", pack.dataFormat);
+    window.localStorage.setItem("ratingHistory", pack.ratingHistory);
+    window.localStorage.setItem("currentSubset", pack.currentSubset);
+    window.localStorage.setItem("currentIndex", pack.currentIndex);
+    window.localStorage.setItem("checkedSubsets", pack.checkedSubsets);
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+  // console.log("state saved");
+  return true;
+}
+
+function loadState() {
+  if (!useStorage) return false;
+  try {
+    var dataFormat = window.localStorage.getItem("dataFormat");
+    var ratingHistory2 = window.localStorage.getItem("ratingHistory");
+    var currentSubset2 = window.localStorage.getItem("currentSubset");
+    var currentIndex2 = window.localStorage.getItem("currentIndex");
+    var checkedSubsets = window.localStorage.getItem("checkedSubsets");
+    return unpackState({ dataFormat: dataFormat, ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets });
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
 }
 
 function downloadState() {
@@ -224,6 +220,7 @@ function uploadState() {
       const pack = JSON.parse(text);
       unpackState(pack);
       refresh();
+      saveState();
     });
   }
 }
@@ -235,11 +232,11 @@ function printToPage(msg) {
 var fetchMain = fetch("data/data_min.json")
   .then((response) => response.json())
   .then((data) => {
-    ({ char_index, attr_index, char2attr } = data);
+    ({ char_index, attr_index, char2attr, attr2article } = data);
     console.log(char_index);
     for (var i = 0; i < char_index.length; i++) {
       char2id.set(char_index[i], i);
-      char2map.push(new Set(char2attr[i]));
+      char2set.push(new Set(char2attr[i]));
     }
     for (var i = 0; i < attr_index.length; i++) {
       attr2id.set(attr_index[i], i);
@@ -315,12 +312,6 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fet
       console.warn(msg);
       printToPage(msg);
     }
-    rating = [];
-    stat = [];
-    for (var i = 0; i < attr_index.length; i++) {
-      rating.push(null);
-      stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
-    }
     ratingHistory = [];
   }
   printToPage("all set let's gooooooooooooooooooooooo");
@@ -340,6 +331,17 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fet
 
 function name2URL(name) {
   return name.replace(" ", "_");
+}
+
+function attr2URL(attrid) {
+  url = attr2article[attrid];
+  if (url === undefined) {
+    return null;
+  }
+  if (url === "") {
+    url = attr_index[attrid];
+  }
+  return url;
 }
 
 function getImageURL(bid, type) {
@@ -396,6 +398,14 @@ function genSubsetlist(tab) {
 }
 
 function refresh(index) {
+  const start_button = document.getElementById("start-button");
+  if (currentIndex == 0) {
+    start_button.innerText = "启动！！";
+    start_button.className = "form-control btn btn-success";
+  } else {
+    start_button.innerText = "重来！！";
+    start_button.className = "form-control btn btn-warning";
+  }
   if (currentIndex >= currentSubset.length) {
     const nameElement = document.getElementById("name");
     nameElement.innerText = "已完全遍历";
@@ -405,6 +415,7 @@ function refresh(index) {
     <img src="assets/img/omedetou.gif" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     return;
   }
+
   if (index === undefined) {
     index = currentIndex;
   }
@@ -486,10 +497,6 @@ function reset() {
   currentIndex = 0;
   console.log(`new subset generated: length=${currentSubset.length}`);
   ratingHistory = [];
-  stat = [];
-  for (var i = 0; i < attr_index.length; i++) {
-    stat.push({ test: [], test_sum: 0, control: [], control_sum: 0 });
-  }
   document.getElementById("ranking-hint").style.display = "block";
   document.getElementById("ranking-table").style.display = "none";
   document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = "";
@@ -497,26 +504,17 @@ function reset() {
   refresh();
 }
 
-function score(val) {
+function onScore(val) {
   id = currentSubset[currentIndex];
   console.log(`score ${val} for ${char_index[id]}`);
   ratingHistory.push({ id: id, score: val });
-  for (var i = 0; i < attr_index.length; i++) {
-    if (char2map[id].has(i)) {
-      stat[i].test.push(val);
-      stat[i].test_sum += val;
-    } else {
-      stat[i].control.push(val);
-      stat[i].control_sum += val;
-    }
-  }
   currentIndex++;
   refresh();
   scheduleSaveState();
   // compute();
 }
 
-function skip() {
+function onSkip() {
   if (currentIndex >= currentSubset.length) {
     return;
   }
@@ -527,92 +525,185 @@ function skip() {
   refresh();
 }
 
-function revert() {
+function onRevert() {
   if (ratingHistory.length == 0) {
     return;
   }
   // console.log(ratingHistory);
   const { id, score } = ratingHistory.pop();
   console.log(`revert ${score} for ${char_index[id]}`);
-  if (score !== undefined) {
-    for (var i = 0; i < attr_index.length; i++) {
-      if (char2map[id].has(i)) {
-        stat[i].test.pop();
-        stat[i].test_sum -= score;
-      } else {
-        stat[i].control.pop();
-        stat[i].control_sum -= score;
-      }
-    }
-  }
   // compute();
   currentIndex--;
   saveState();
   refresh();
 }
 
+function upgradeRatingHistory(his) {
+  console.log("Upgrading old ratingHistory");
+  const conv = new Map([
+    [-16, -5],
+    [-12, -5],
+    [-8, -4],
+    [-4, -3],
+    [-2, -2],
+    [-1, -1],
+    [0, 0],
+    [1, 1],
+    [2, 2],
+    [4, 3],
+    [8, 4],
+    [12, 5],
+    [16, 5],
+  ]);
+  for (var i = 0; i < his.length; i++) {
+    score = his[i].score;
+    if (score == null) continue;
+    if (conv.has(score)) {
+      his[i].score = conv.get(score);
+    } else {
+      console.log("Unknown old score:", score);
+    }
+  }
+}
+
 function compute() {
   const t = Date.now();
-  var tmp = "";
-  const result = [];
-  for (var i = 0; i < attr_index.length; i++) {
-    const test = stat[i].test;
-    const control = stat[i].control;
-    if (test.length === 0 || control.length === 0) {
-      rating[i] = null;
-      continue;
+
+  const compute_button = document.getElementById("compute-button");
+  compute_button.innerText = "计算中...";
+  compute_button.setAttribute("disabled", "");
+
+  setTimeout(() => {
+    const mp = new Map();
+
+    const attrMap = new Map();
+    ratingHistory.forEach(({ id, score }) => {
+      if (score === null) return;
+      char2attr[id].forEach((attr) => {
+        if (attrMap.has(attr)) {
+          attrMap.set(attr, attrMap.get(attr) + 1);
+        } else {
+          attrMap.set(attr, 1);
+        }
+      });
+      if (mp.has(score)) {
+        mp.set(score, mp.get(score) + 1);
+      } else {
+        mp.set(score, 1);
+      }
+    });
+
+    const attrs = [];
+    const attrSet = new Set();
+    attrMap.forEach((value, key, map) => {
+      if (value >= 3) {
+        attrs.push(key);
+        attrSet.add(key);
+      }
+    });
+    console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
+
+    [avg, std] = weighedNormalDist(mp);
+    console.log("Stat of scores:");
+    console.log(`avg=${avg}, std=${std}`);
+    console.log(Array.from(mp.entries()).sort());
+
+    const stat = [];
+    for (var i = 0; i < attr_index.length; i++) {
+      stat[i] = { n_test: 0, n_control: 0, s_test: 0, s_control: 0 };
     }
-    const avg1 = stat[i].test_sum / test.length;
-    const avg2 = stat[i].control_sum / control.length;
-    // const [avg1, std1] = normalDist(test);
-    // const [avg2, std2] = normalDist(control);
-    const delta = avg1 - avg2;
-    const countFactor = Math.min(1.8, Math.max(0, Math.log((test.length * control.length) / (test.length + control.length) / 2 + 1) - 0.5));
-    // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
-    const rt = delta * countFactor;
-    rating[i] = {
-      attr: i,
-      rating: rt,
-      avg1: avg1,
-      // std1: std1,
-      n1: test.length,
-      avg2: avg2,
-      // std2: std2,
-      n2: control.length,
-      delta: delta,
-      countFactor: countFactor,
-      // stdFactor: stdFactor,
-    };
-    result.push(rating[i]);
-  }
-  result.sort((a, b) => {
-    return b.rating - a.rating;
-  });
-  var cnt = 0;
-  for (var i = 0; i < result.length; i++) {
-    if (result[i].count <= 2) continue;
-    attr = attr_index[result[i].attr];
-    var href = "";
-    if (attr.article !== undefined) {
-      href = ` href="https://zh.moegirl.org.cn/${name2URL(attr.article)}"`;
+
+    function newScore(score) {
+      return signedExp(2, (score - avg) / std) - 1;
     }
-    if (Math.abs(result[i].rating) < 0.05) continue;
-    const name = `<a${href} target="_blank">${attr}</a>`;
-    cnt++;
-    tmp += `<tr><th scope="row">${cnt}</th><td>${name}</td>
+
+    ratingHistory.forEach(({ id, score }) => {
+      const s = newScore(score);
+      attrs.forEach((attr) => {
+        if (char2set[id].has(attr)) {
+          stat[attr].n_test++;
+          stat[attr].s_test += s;
+        } else {
+          stat[attr].n_control++;
+          stat[attr].s_control += s;
+        }
+      });
+    });
+
+    const result = [];
+    for (var i = 0; i < attr_index.length; i++) {
+      if (!attrSet.has(i)) {
+        rating[i] = null;
+        continue;
+      }
+      const n_test = stat[i].n_test;
+      const n_control = stat[i].n_control;
+      const s_test = stat[i].s_test;
+      const s_control = stat[i].s_control;
+      if (n_test === 0 || n_control === 0) {
+        rating[i] = null;
+        continue;
+      }
+      const avg1 = s_test / n_test;
+      const avg2 = s_control / n_control;
+      // const [avg1, std1] = normalDist(test);
+      // const [avg2, std2] = normalDist(control);
+      const delta = avg1 - avg2;
+      const countFactor = Math.min(1.8, Math.max(0, Math.log((n_test * n_control) / (n_test + n_control) / 2 + 1) - 0.7));
+      // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
+      const rt = delta * countFactor;
+      rating[i] = {
+        attr: i,
+        rating: rt,
+        avg1: avg1,
+        // std1: std1,
+        n1: n_test,
+        avg2: avg2,
+        // std2: std2,
+        n2: n_control,
+        delta: delta,
+        countFactor: countFactor,
+        // stdFactor: stdFactor,
+      };
+      result.push(rating[i]);
+    }
+
+    result.sort((a, b) => {
+      return b.rating - a.rating;
+    });
+
+    var cnt = 0;
+    var tmp = "";
+    for (var i = 0; i < result.length; i++) {
+      if (result[i].count <= 2) continue;
+      if (Math.abs(result[i].rating) < 0.05) continue;
+
+      attr_name = attr_index[result[i].attr];
+      var attr_tag = attr_name;
+      const attr_url = attr2URL(result[i].attr);
+      if (attr_url !== null) {
+        attr_tag = `<a href="${"https://zh.moegirl.org.cn/" + attr_url}" target="_blank">${attr_name}</a>`;
+      }
+      cnt++;
+      tmp += `<tr><th scope="row">${cnt}</th><td>${attr_tag}</td>
     <td style="background: ${colorize(result[i].rating, 4)}">${result[i].rating.toFixed(2)}</td>
     <td>${result[i].avg1.toFixed(2)}/${result[i].n1}
       ${colorspan(result[i].delta, 8)}
       ${colorspan2(result[i].countFactor, 0, 1.8)}
     </td>
     </tr>`;
-  }
-  if (tmp.length > 0) {
-    document.getElementById("ranking-hint").style.display = "none";
-    document.getElementById("ranking-table").style.display = "block";
-    document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
-  }
-  console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
+    }
+    if (tmp.length > 0) {
+      document.getElementById("ranking-hint").style.display = "none";
+      document.getElementById("ranking-table").style.display = "block";
+      document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
+    }
+
+    compute_button.innerText = "刷新结果";
+    compute_button.removeAttribute("disabled");
+    console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
+    // alert(`time=${Date.now() - t} attr_count=${attrMap.size} attrs=${attrs.length}`);
+  }, 0);
 }
 
 function makeDebounce(callback, wait) {
@@ -628,16 +719,18 @@ function makeDebounce(callback, wait) {
 const scheduleSaveState = makeDebounce(saveState, 200);
 
 function predict(subset) {
+  const t = Date.now();
+
   var prediction = [];
   for (var ii = 0; ii < subset.length; ii++) {
     const i = subset[ii];
     const scores = [];
-    for (attr of char2attr[i]) {
+    char2attr[i].forEach((attr) => {
       const rt = rating[attr];
       if (rt !== null) {
         scores.push({ rating: rt.rating, attr: attr });
       }
-    }
+    });
     scores.sort((a, b) => {
       return -(a.rating - b.rating);
     });
@@ -682,6 +775,8 @@ function predict(subset) {
   prediction.sort((a, b) => {
     return -(a.score - b.score);
   });
+
+  console.log(`Prediction finished prediction.length=${prediction.length} time=${Date.now() - t}ms`);
   return prediction;
 }
 
@@ -730,7 +825,24 @@ function changeTab() {
   toggle(radios[1], "tab-predict");
 }
 
-function normalDist(arr) {
+function weighedNormalDist(arr) {
+  var avg = 0;
+  var n = 0;
+  for ([x, w] of arr) {
+    avg += x * w;
+    n += w;
+  }
+  avg /= n;
+  var std = 0;
+  for ([x, w] of arr) {
+    const diff = x - avg;
+    std += diff * diff * w;
+  }
+  std = Math.sqrt(std / n);
+  return [avg, std];
+}
+
+function NormalDist(arr) {
   var avg = 0;
   for (i of arr) {
     avg += i;
@@ -783,11 +895,11 @@ function colorspan2(val, limit1, limit2) {
   return `<span style="background-color:${colorize2(val, limit1, limit2)}">${val.toFixed(2)}</span>`;
 }
 
-function powerWeigh(x, w) {
-  if (x > 0) {
-    return Math.pow(x, w);
+function signedExp(x, a) {
+  if (a > 0) {
+    return Math.pow(x, a) - 1;
   }
-  return -Math.pow(-x, w);
+  return -(Math.pow(x, -a) - 1);
 }
 
 function shuffle(array) {
@@ -804,7 +916,7 @@ function shuffle(array) {
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
-  max = Math.floor(max);
+  max = Math.floor(max + 1);
   return Math.floor(Math.random() * (max - min) + min);
 }
 
@@ -833,5 +945,11 @@ function storageAvailable(type) {
       storage &&
       storage.length !== 0
     );
+  }
+}
+
+function randomScoreAll() {
+  while (currentIndex < currentSubset.length) {
+    onScore(getRandomInt(0, 10));
   }
 }
