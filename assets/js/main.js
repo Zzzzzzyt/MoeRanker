@@ -26,7 +26,7 @@ const subsets = [
   { name: "AOT_subset", display: "进击的巨人", checked: false },
   { name: "jujutsu_subset", display: "咒术回战", checked: false },
   // { name: "lol_subset", display: "英雄联盟LOL", checked: false },
-  { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
+  // { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
   // { name: "conan_subset", display: "名侦探柯南", checked: false },
   { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
   { name: "bangdream_subset", display: "BanG Dream!系列", checked: false },
