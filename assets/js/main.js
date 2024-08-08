@@ -1,3 +1,5 @@
+"use strict";
+
 const LATEST_FORMAT = "v2";
 
 const subsets = [
@@ -89,7 +91,7 @@ function packState() {
   // pack checked subsets
   const checkedSubsets = [];
   const list = document.querySelector("#score-panel .subset-list").querySelectorAll('input[id*="subset"]');
-  for (node of list) {
+  for (const node of list) {
     const checked = node.checked;
     const name = subsets[parseInt(node.id.replace("tab-score-subset-", ""))].name;
     if (checked) {
@@ -187,11 +189,11 @@ function saveState() {
 function loadState() {
   if (!useStorage) return false;
   try {
-    var dataFormat = window.localStorage.getItem("dataFormat");
-    var ratingHistory2 = window.localStorage.getItem("ratingHistory");
-    var currentSubset2 = window.localStorage.getItem("currentSubset");
-    var currentIndex2 = window.localStorage.getItem("currentIndex");
-    var checkedSubsets = window.localStorage.getItem("checkedSubsets");
+    const dataFormat = window.localStorage.getItem("dataFormat");
+    const ratingHistory2 = window.localStorage.getItem("ratingHistory");
+    const currentSubset2 = window.localStorage.getItem("currentSubset");
+    const currentIndex2 = window.localStorage.getItem("currentIndex");
+    const checkedSubsets = window.localStorage.getItem("checkedSubsets");
     return unpackState({ dataFormat: dataFormat, ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets });
   } catch (e) {
     console.error(e);
@@ -200,8 +202,8 @@ function loadState() {
 }
 
 function downloadState() {
-  blob = new Blob([JSON.stringify(packState())], { type: "application/json" });
-  url = URL.createObjectURL(blob);
+  const blob = new Blob([JSON.stringify(packState())], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
   const element = document.createElement("a");
   element.setAttribute("href", url);
   element.setAttribute("download", "state.json");
@@ -308,7 +310,7 @@ Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fet
     printToPage(msg);
   } else {
     if (useStorage) {
-      msg = "localStorage available but loading failed. Is this the first session?";
+      const msg = "localStorage available but loading failed. Is this the first session?";
       console.warn(msg);
       printToPage(msg);
     }
@@ -334,12 +336,12 @@ function name2URL(name) {
 }
 
 function attr2URL(attrid) {
-  url = attr2article[attrid];
+  const url = attr2article[attrid];
   if (url === undefined) {
     return null;
   }
   if (url === "") {
-    url = attr_index[attrid];
+    return attr_index[attrid];
   }
   return url;
 }
@@ -426,14 +428,14 @@ function refresh(index) {
   nameElement.href = "https://zh.moegirl.org.cn/" + name2URL(char);
   document.getElementById("progress-text").innerText = `${index + 1} / ${currentSubset.length}`;
 
-  debug = `${char_index[id]}: `;
-  for (attr of char2attr[id]) {
+  var debug = `${char_index[id]}: `;
+  for (const attr of char2attr[id]) {
     debug += attr_index[attr] + " ";
   }
   console.log(debug);
 
   const oldPreload = document.head.getElementsByClassName("char-image-preloader");
-  for (i of oldPreload) {
+  for (const i of oldPreload) {
     i.remove();
   }
   for (var i = currentIndex - 2; i <= currentIndex + 5; i++) {
@@ -450,12 +452,13 @@ function refresh(index) {
   const ids = moegirl2bgm[char];
   var tmp = "";
   const lim = Number.parseInt(document.getElementById("tab-score-k-image").value);
+  console.log(ids);
   if (ids !== undefined) {
     for (var j = 0; j < ids.length && j < lim; j++) {
       tmp += `<a href="https://bgm.tv/character/${ids[j]}" target="_blank">
       <img src="${getImageURL(ids[j], "medium")}" alt="人物图片" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
-  } else {
+  } else if (lim > 0) {
     tmp += `<a href="https://bgm.tv/character/13004" target="_blank">
       <img src="assets/img/akarin.jpg" alt="无映射" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
   }
@@ -472,8 +475,8 @@ function genSubset(tab) {
       }
     }
   }
-  forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
-  ret = [];
+  const forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
+  const ret = [];
   tmpSet.forEach((val) => {
     if (forceMapping && moegirl2bgm[char_index[val]] === undefined) {
       return;
@@ -484,7 +487,7 @@ function genSubset(tab) {
 }
 
 function reset() {
-  random = document.getElementById("tab-score-random");
+  var random = document.getElementById("tab-score-random");
   if (random === null) {
     random = false;
   } else {
@@ -505,7 +508,10 @@ function reset() {
 }
 
 function onScore(val) {
-  id = currentSubset[currentIndex];
+  if (currentIndex >= currentSubset.length) {
+    return;
+  }
+  const id = currentSubset[currentIndex];
   console.log(`score ${val} for ${char_index[id]}`);
   ratingHistory.push({ id: id, score: val });
   currentIndex++;
@@ -518,7 +524,7 @@ function onSkip() {
   if (currentIndex >= currentSubset.length) {
     return;
   }
-  id = currentSubset[currentIndex];
+  const id = currentSubset[currentIndex];
   ratingHistory.push({ id: id, score: null });
   currentIndex++;
   scheduleSaveState();
@@ -556,7 +562,7 @@ function upgradeRatingHistory(his) {
     [16, 5],
   ]);
   for (var i = 0; i < his.length; i++) {
-    score = his[i].score;
+    const score = his[i].score;
     if (score == null) continue;
     if (conv.has(score)) {
       his[i].score = conv.get(score);
@@ -603,7 +609,7 @@ function compute() {
     });
     console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
 
-    [avg, std] = weighedNormalDist(mp);
+    const [avg, std] = weighedNormalDist(mp);
     console.log("Stat of scores:");
     console.log(`avg=${avg}, std=${std}`);
     console.log(Array.from(mp.entries()).sort());
@@ -614,6 +620,7 @@ function compute() {
     }
 
     function newScore(score) {
+      return (score - avg) / std;
       return signedExp(2, (score - avg) / std) - 1;
     }
 
@@ -678,7 +685,7 @@ function compute() {
       if (result[i].count <= 2) continue;
       if (Math.abs(result[i].rating) < 0.05) continue;
 
-      attr_name = attr_index[result[i].attr];
+      const attr_name = attr_index[result[i].attr];
       var attr_tag = attr_name;
       const attr_url = attr2URL(result[i].attr);
       if (attr_url !== null) {
@@ -828,13 +835,13 @@ function changeTab() {
 function weighedNormalDist(arr) {
   var avg = 0;
   var n = 0;
-  for ([x, w] of arr) {
+  for (const [x, w] of arr) {
     avg += x * w;
     n += w;
   }
   avg /= n;
   var std = 0;
-  for ([x, w] of arr) {
+  for (const [x, w] of arr) {
     const diff = x - avg;
     std += diff * diff * w;
   }
@@ -882,7 +889,7 @@ function colorize2(val, limit1, limit2) {
   if (limit1 > limit2) {
     [limit1, limit2] = [limit2, limit1];
   }
-  f = Math.max(limit1, Math.min(limit2, val));
+  var f = Math.max(limit1, Math.min(limit2, val));
   f = (f - limit1) / (limit2 - limit1);
   return `hsl(${(f * 120).toFixed(0)} 80% 70%)`;
 }
