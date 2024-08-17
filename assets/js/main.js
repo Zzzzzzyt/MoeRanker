@@ -638,10 +638,8 @@ function compute() {
     });
 
     const result = [];
-    const rating = [];
     for (var i = 0; i < attr_index.length; i++) {
       if (!attrSet.has(i)) {
-        rating[i] = null;
         continue;
       }
       const n_test = stat[i].n_test;
@@ -649,7 +647,6 @@ function compute() {
       const s_test = stat[i].s_test;
       const s_control = stat[i].s_control;
       if (n_test === 0 || n_control === 0) {
-        rating[i] = null;
         continue;
       }
       const avg1 = s_test / n_test;
@@ -660,7 +657,7 @@ function compute() {
       const countFactor = Math.min(1.8, Math.max(0, Math.log((n_test * n_control) / (n_test + n_control) / 2 + 1) - 0.7));
       // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
       const rt = delta * countFactor;
-      rating[i] = {
+      result.push({
         attr: i,
         rating: rt,
         avg1: avg1,
@@ -672,8 +669,7 @@ function compute() {
         delta: delta,
         countFactor: countFactor,
         // stdFactor: stdFactor,
-      };
-      result.push(rating[i]);
+      });
     }
 
     result.sort((a, b) => {
