@@ -638,6 +638,7 @@ function compute() {
     });
 
     const result = [];
+    const rating = [];
     for (var i = 0; i < attr_index.length; i++) {
       if (!attrSet.has(i)) {
         rating[i] = null;
