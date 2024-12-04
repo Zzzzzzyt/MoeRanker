@@ -605,6 +605,9 @@ function compute() {
 
   setTimeout(() => {
     if (ratingHistory.length === 0) {
+      console.log("No data to compute");
+      compute_button.innerText = "刷新结果";
+      compute_button.removeAttribute("disabled");
       return;
     }
 
