@@ -370,6 +370,7 @@ function displaySubsets() {
     for (var j = 0; j < subsets[i].subset.length; j++) {
       const id = char2id.get(subsets[i].subset[j]);
       if (id === undefined) {
+        console.warn("in subset but not in char_index?", subsets[i].subset[j]);
         continue;
       }
       tmpSubset.push(id);
