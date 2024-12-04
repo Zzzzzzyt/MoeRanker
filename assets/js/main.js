@@ -515,6 +515,12 @@ function onScore(val) {
   console.log(`score ${val} for ${char_index[id]}`);
   ratingHistory.push({ id: id, score: val });
   currentIndex++;
+
+  const auto_compute = document.getElementById("auto-compute");
+  if (auto_compute.checked) {
+    scheduleCompute();
+  }
+
   refresh();
   scheduleSaveState();
   // compute();
@@ -527,6 +533,12 @@ function onSkip() {
   const id = currentSubset[currentIndex];
   ratingHistory.push({ id: id, score: null });
   currentIndex++;
+
+  const auto_compute = document.getElementById("auto-compute");
+  if (auto_compute.checked) {
+    scheduleCompute();
+  }
+
   scheduleSaveState();
   refresh();
 }
@@ -540,6 +552,12 @@ function onRevert() {
   console.log(`revert ${score} for ${char_index[id]}`);
   // compute();
   currentIndex--;
+
+  const auto_compute = document.getElementById("auto-compute");
+  if (auto_compute.checked) {
+    scheduleCompute();
+  }
+
   saveState();
   refresh();
 }
@@ -576,10 +594,19 @@ function compute() {
   const t = Date.now();
 
   const compute_button = document.getElementById("compute-button");
+
+  if (compute_button.hasAttribute("disabled")) {
+    console.warn("is a previous computation unfinished?");
+  }
+
   compute_button.innerText = "计算中...";
   compute_button.setAttribute("disabled", "");
 
   setTimeout(() => {
+    if (ratingHistory.length === 0) {
+      return;
+    }
+
     const mp = new Map();
 
     const attrMap = new Map();
@@ -723,7 +750,15 @@ function makeDebounce(callback, wait) {
   };
 }
 
+function isMobile() {
+  if (navigator.userAgentData) {
+    return navigator.userAgentData.mobile;
+  }
+  return /Mobi/i.test(navigator.userAgent);
+}
+
 const scheduleSaveState = makeDebounce(saveState, 200);
+const scheduleCompute = makeDebounce(compute, isMobile() ? 200 : 50);
 
 function predict(subset) {
   const t = Date.now();

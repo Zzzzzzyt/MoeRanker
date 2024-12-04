@@ -264,13 +264,13 @@
           <button class="form-control btn btn-primary" onclick="onSkip();">跳过</button>
         </div>
         <br />
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(0);">0</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(1);">1</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(2);">2</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(3);">3</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(4);">4</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(5);">5</button>
-        <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(6);">6</button>
+        <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="onScore(0);">0</button>
+        <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="onScore(1);">1</button>
+        <button class="btn btn-danger" style="width: 50px; margin-bottom: 8px" onclick="onScore(2);">2</button>
+        <button class="btn btn-warning" style="width: 50px; margin-bottom: 8px" onclick="onScore(3);">3</button>
+        <button class="btn btn-warning" style="width: 50px; margin-bottom: 8px" onclick="onScore(4);">4</button>
+        <button class="btn btn-warning" style="width: 50px; margin-bottom: 8px" onclick="onScore(5);">5</button>
+        <button class="btn btn-warning" style="width: 50px; margin-bottom: 8px" onclick="onScore(6);">6</button>
         <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(7);">7</button>
         <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(8);">8</button>
         <button class="btn btn-success" style="width: 50px; margin-bottom: 8px" onclick="onScore(9);">9</button>
@@ -282,7 +282,7 @@
       </div>
       <div id="result-panel"
         style="padding: 10px; flex-basis: 360px; flex-grow: 1; max-width: max-content; max-height: 90vh; overflow: auto auto; display: none">
-        <button id="compute-button" class="form-control btn btn-success" style="margin-bottom: 10px; height: 68px;"
+        <button id="compute-button" class="btn btn-success" style="margin-bottom: 10px; height: 68px;width:100%;"
           onclick="compute();">刷新结果</button>
         <p id="ranking-hint"
           style="min-width: 300px; text-align: center; font-size: 20pt; white-space: nowrap; color: #ccc; border: 2px #ccc solid">
@@ -297,16 +297,20 @@
           <tbody></tbody>
         </table>
       </div>
-      <div class="subset-panel" style="flex-basis: 300px; padding: 10px; display: none">
-        <div style="max-width: 300px">
+      <div class="subset-panel" style="flex-basis: 320px; padding: 10px; display: none">
+        <div style="max-width: 320px">
           <div class="input-group" style="margin-bottom: 10px">
             <div class="input-group-text">
-              <input id="tab-score-force-mapping" type="checkbox" class="form-check-input mt-0" checked />
-              <span>&nbsp;<label for="tab-score-force-mapping">必须有图像</label></span>
+              <input id="tab-score-force-mapping" type="checkbox" class="form-check-input mt-0" />
+              <span>&nbsp;<label for="tab-score-force-mapping">有图像</label></span>
             </div>
             <div class="input-group-text">
               <input id="tab-score-random" type="checkbox" class="form-check-input mt-0" checked />
               <span>&nbsp;<label for="tab-score-random">乱序</label></span>
+            </div>
+            <div class="input-group-text">
+              <input class="form-check-input" type="checkbox" id="auto-compute">
+              <span>&nbsp;<label for="auto-compute">自动刷新</label></span>
             </div>
           </div>
           <div class="input-group" style="margin-bottom: 10px; max-width:170px">
