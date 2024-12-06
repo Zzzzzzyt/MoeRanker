@@ -323,6 +323,10 @@ function fetchData() {
         printToPage(msg);
       }
       ratingHistory = [];
+      rating = [];
+      for (var i = 0; i < attr_index.length; i++) {
+        rating.push(null);
+      }
     }
     printToPage("all set let's gooooooooooooooooooooooo");
 
