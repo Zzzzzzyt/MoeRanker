@@ -58,7 +58,6 @@ var currentSubset = null;
 
 var char_index, attr_index, char2attr;
 var attr2article;
-var importanceTmp;
 var importance = [];
 var char2set = [];
 var moegirl2bgm;
@@ -214,6 +213,12 @@ function downloadState() {
 }
 
 function uploadState() {
+  if (currentIndex != 0) {
+    if (!confirm("真的要覆盖当前进度吗？")) {
+      return;
+    }
+  }
+
   const element = document.getElementById("upload_state");
   if (element.files.length == 1) {
     const file = element.files[0];
@@ -231,105 +236,111 @@ function printToPage(msg) {
   document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
 }
 
-var fetchMain = fetch("data/data_min.json")
-  .then((response) => response.json())
-  .then((data) => {
-    ({ char_index, attr_index, char2attr, attr2article } = data);
-    console.log(char_index);
-    for (var i = 0; i < char_index.length; i++) {
-      char2id.set(char_index[i], i);
-      char2set.push(new Set(char2attr[i]));
-    }
-    for (var i = 0; i < attr_index.length; i++) {
-      attr2id.set(attr_index[i], i);
-    }
-    const msg = `main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`;
-    printToPage(msg);
-    console.log(msg);
-  });
+function fetchData() {
+  var importanceTmp;
 
-var fetchMap = fetch("data/moegirl2bgm.json")
-  .then((response) => response.json())
-  .then((data) => {
-    moegirl2bgm = data;
-    const msg = `mapping loaded: moegirl2bgm.length=${Object.keys(moegirl2bgm).length}`;
-    printToPage(msg);
-    console.log(msg);
-  });
-
-var fetchSubset = [];
-for (var i = 1; i < subsets.length; i++) {
-  const subid = i;
-  fetchSubset.push(
-    fetch(`data/subsets/${subsets[i].name}.json`).then((response) => {
-      if (!response.ok) {
-        const msg = `subset ${subsets[subid].name} not loaded: ${response.status}`;
-        printToPage(`<span style="color:red;">${msg}</span>`);
-        console.log(msg);
-        subsets[subid].display += ' <span style="color:red;">ERROR</span>';
-        subsets[subid].subset = [];
-      } else {
-        return response.json().then((data) => {
-          subsets[subid].subset = data;
-          const msg = `subset ${subsets[subid].name} loaded: length=${data.length}`;
-          printToPage(msg);
-          console.log(msg);
-        });
+  var fetchMain = fetch("data/data_min.json")
+    .then((response) => response.json())
+    .then((data) => {
+      ({ char_index, attr_index, char2attr, attr2article } = data);
+      console.log(char_index);
+      for (var i = 0; i < char_index.length; i++) {
+        char2id.set(char_index[i], i);
+        char2set.push(new Set(char2attr[i]));
       }
-    })
-  );
+      for (var i = 0; i < attr_index.length; i++) {
+        attr2id.set(attr_index[i], i);
+      }
+      const msg = `main data loaded: char_index.length=${char_index.length} attr_index.length=${attr_index.length}`;
+      printToPage(msg);
+      console.log(msg);
+    });
+
+  var fetchMap = fetch("data/moegirl2bgm.json")
+    .then((response) => response.json())
+    .then((data) => {
+      moegirl2bgm = data;
+      const msg = `mapping loaded: moegirl2bgm.length=${Object.keys(moegirl2bgm).length}`;
+      printToPage(msg);
+      console.log(msg);
+    });
+
+  var fetchSubset = [];
+  for (var i = 1; i < subsets.length; i++) {
+    const subid = i;
+    fetchSubset.push(
+      fetch(`data/subsets/${subsets[i].name}.json`).then((response) => {
+        if (!response.ok) {
+          const msg = `subset ${subsets[subid].name} not loaded: ${response.status}`;
+          printToPage(`<span style="color:red;">${msg}</span>`);
+          console.log(msg);
+          subsets[subid].display += ' <span style="color:red;">ERROR</span>';
+          subsets[subid].subset = [];
+        } else {
+          return response.json().then((data) => {
+            subsets[subid].subset = data;
+            const msg = `subset ${subsets[subid].name} loaded: length=${data.length}`;
+            printToPage(msg);
+            console.log(msg);
+          });
+        }
+      })
+    );
+  }
+
+  var fetchImportance = fetch("data/importance.json")
+    .then((response) => response.json())
+    .then((data) => {
+      const msg = `importance loaded: length=${Object.keys(data).length}`;
+      printToPage(msg);
+      console.log(msg);
+      importanceTmp = data;
+    });
+
+  var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
+    .then((response) => response.json())
+    .then((data) => {
+      const msg = `image preload map loaded: length=${Object.keys(data).length}`;
+      printToPage(msg);
+      console.log(msg);
+      images = data;
+    });
+
+  Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchImageMap]).then(() => {
+    for (var i = 0; i < attr_index.length; i++) {
+      importance.push(importanceTmp[attr_index[i]]);
+    }
+    displaySubsets();
+    const loaded = loadState();
+    if (loaded) {
+      const msg = `locaStorage loaded: ratingHistory=${ratingHistory.length} currentSubset=${currentSubset.length}`;
+      console.log(msg);
+      printToPage(msg);
+    } else {
+      if (useStorage) {
+        const msg = "localStorage available but loading failed. Is this the first session?";
+        console.warn(msg);
+        printToPage(msg);
+      }
+      ratingHistory = [];
+    }
+    printToPage("all set let's gooooooooooooooooooooooo");
+
+    if (!loaded) {
+      currentSubset = subsets[0].subset;
+      reset();
+    }
+
+    document.querySelectorAll(".subset-panel").forEach((e) => {
+      e.style.display = "block";
+    });
+    document.getElementById("result-panel").style.display = "block";
+    document.getElementById("loading-output").style.display = "none";
+    refresh();
+  });
 }
 
-var fetchImportance = fetch("data/importance.json")
-  .then((response) => response.json())
-  .then((data) => {
-    const msg = `importance loaded: length=${Object.keys(data).length}`;
-    printToPage(msg);
-    console.log(msg);
-    importanceTmp = data;
-  });
-
-var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
-  .then((response) => response.json())
-  .then((data) => {
-    const msg = `image preload map loaded: length=${Object.keys(data).length}`;
-    printToPage(msg);
-    console.log(msg);
-    images = data;
-  });
-
-Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchImageMap]).then(() => {
-  for (var i = 0; i < attr_index.length; i++) {
-    importance.push(importanceTmp[attr_index[i]]);
-  }
-  displaySubsets();
-  const loaded = loadState();
-  if (loaded) {
-    const msg = `locaStorage loaded: ratingHistory=${ratingHistory.length} currentSubset=${currentSubset.length}`;
-    console.log(msg);
-    printToPage(msg);
-  } else {
-    if (useStorage) {
-      const msg = "localStorage available but loading failed. Is this the first session?";
-      console.warn(msg);
-      printToPage(msg);
-    }
-    ratingHistory = [];
-  }
-  printToPage("all set let's gooooooooooooooooooooooo");
-
-  if (!loaded) {
-    currentSubset = subsets[0].subset;
-    reset();
-  }
-
-  document.querySelectorAll(".subset-panel").forEach((e) => {
-    e.style.display = "block";
-  });
-  document.getElementById("result-panel").style.display = "block";
-  document.getElementById("loading-output").style.display = "none";
-  refresh();
-});
+fetchData();
 
 function name2URL(name) {
   return name.replace(" ", "_");
@@ -488,6 +499,12 @@ function genSubset(tab) {
 }
 
 function reset() {
+  if (currentIndex != 0) {
+    if (!confirm("真的要重新开始吗？")) {
+      return;
+    }
+  }
+
   var random = document.getElementById("tab-score-random");
   if (random === null) {
     random = false;
@@ -592,156 +609,146 @@ function upgradeRatingHistory(his) {
 }
 
 function compute() {
-  const t = Date.now();
-
   const compute_button = document.getElementById("compute-button");
 
-  if (compute_button.hasAttribute("disabled")) {
-    console.warn("is a previous computation unfinished?");
-  }
-
-  compute_button.innerText = "计算中...";
-  compute_button.setAttribute("disabled", "");
-
-  setTimeout(() => {
-    if (ratingHistory.length === 0) {
-      console.log("No data to compute");
-      compute_button.innerText = "刷新结果";
-      compute_button.removeAttribute("disabled");
-      return;
-    }
-
-    const mp = new Map();
-
-    const attrMap = new Map();
-    ratingHistory.forEach(({ id, score }) => {
-      if (score === null) return;
-      char2attr[id].forEach((attr) => {
-        if (attrMap.has(attr)) {
-          attrMap.set(attr, attrMap.get(attr) + 1);
-        } else {
-          attrMap.set(attr, 1);
-        }
-      });
-      if (mp.has(score)) {
-        mp.set(score, mp.get(score) + 1);
-      } else {
-        mp.set(score, 1);
-      }
-    });
-
-    const attrs = [];
-    const attrSet = new Set();
-    attrMap.forEach((value, key, map) => {
-      if (value >= 3) {
-        attrs.push(key);
-        attrSet.add(key);
-      }
-    });
-    console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
-
-    const [avg, std] = weighedNormalDist(mp);
-    console.log("Stat of scores:");
-    console.log(`avg=${avg}, std=${std}`);
-    console.log(Array.from(mp.entries()).sort());
-
-    const stat = [];
-    for (var i = 0; i < attr_index.length; i++) {
-      stat[i] = { n_test: 0, n_control: 0, s_test: 0, s_control: 0 };
-    }
-
-    function newScore(score) {
-      return (score - avg) / std;
-      return signedExp(2, (score - avg) / std) - 1;
-    }
-
-    ratingHistory.forEach(({ id, score }) => {
-      const s = newScore(score);
-      attrs.forEach((attr) => {
-        if (char2set[id].has(attr)) {
-          stat[attr].n_test++;
-          stat[attr].s_test += s;
-        } else {
-          stat[attr].n_control++;
-          stat[attr].s_control += s;
-        }
-      });
-    });
-
-    const result = [];
-    for (var i = 0; i < attr_index.length; i++) {
-      if (!attrSet.has(i)) {
-        rating[i] = null;
-        continue;
-      }
-      const n_test = stat[i].n_test;
-      const n_control = stat[i].n_control;
-      const s_test = stat[i].s_test;
-      const s_control = stat[i].s_control;
-      if (n_test === 0 || n_control === 0) {
-        rating[i] = null;
-        continue;
-      }
-      const avg1 = s_test / n_test;
-      const avg2 = s_control / n_control;
-      // const [avg1, std1] = normalDist(test);
-      // const [avg2, std2] = normalDist(control);
-      const delta = avg1 - avg2;
-      const countFactor = Math.min(1.8, Math.max(0, Math.log((n_test * n_control) / (n_test + n_control) / 2 + 1) - 0.7));
-      // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
-      const rt = delta * countFactor;
-      rating[i] = {
-        attr: i,
-        rating: rt,
-        avg1: avg1,
-        // std1: std1,
-        n1: n_test,
-        avg2: avg2,
-        // std2: std2,
-        n2: n_control,
-        delta: delta,
-        countFactor: countFactor,
-        // stdFactor: stdFactor,
-      };
-      result.push(rating[i]);
-    }
-
-    result.sort((a, b) => {
-      return b.rating - a.rating;
-    });
-
-    var cnt = 0;
-    var tmp = "";
-    for (var i = 0; i < result.length; i++) {
-      if (result[i].count <= 2) continue;
-      if (Math.abs(result[i].rating) < 0.05) continue;
-
-      const attr_name = attr_index[result[i].attr];
-      var attr_tag = attr_name;
-      const attr_url = attr2URL(result[i].attr);
-      if (attr_url !== null) {
-        attr_tag = `<a href="${"https://zh.moegirl.org.cn/" + attr_url}" target="_blank">${attr_name}</a>`;
-      }
-      cnt++;
-      tmp += `<tr><th scope="row">${cnt}</th><td>${attr_tag}</td>
-    <td style="background: ${colorize(result[i].rating, 4)}">${result[i].rating.toFixed(2)}</td>
-    <td>${result[i].avg1.toFixed(2)}/${result[i].n1}
-      ${colorspan(result[i].delta, 8)}
-      ${colorspan2(result[i].countFactor, 0, 1.8)}
-    </td>
-    </tr>`;
-    }
-    if (tmp.length > 0) {
-      document.getElementById("ranking-hint").style.display = "none";
-      document.getElementById("ranking-table").style.display = "block";
-      document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
-    }
-
+  if (ratingHistory.length === 0) {
+    console.log("No data to compute");
     compute_button.innerText = "刷新结果";
     compute_button.removeAttribute("disabled");
-    console.log(`Compute finished result.length=${cnt} time=${Date.now() - t}ms`);
-    // alert(`time=${Date.now() - t} attr_count=${attrMap.size} attrs=${attrs.length}`);
-  }, 0);
+    return;
+  }
+
+  const t = Date.now();
+
+  const mp = new Map();
+
+  const attrMap = new Map();
+  ratingHistory.forEach(({ id, score }) => {
+    if (score === null) return;
+    char2attr[id].forEach((attr) => {
+      if (attrMap.has(attr)) {
+        attrMap.set(attr, attrMap.get(attr) + 1);
+      } else {
+        attrMap.set(attr, 1);
+      }
+    });
+    if (mp.has(score)) {
+      mp.set(score, mp.get(score) + 1);
+    } else {
+      mp.set(score, 1);
+    }
+  });
+
+  const attrs = [];
+  const attrSet = new Set();
+  attrMap.forEach((value, key, map) => {
+    if (value >= 3) {
+      attrs.push(key);
+      attrSet.add(key);
+    }
+  });
+  console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
+
+  const [avg, std] = weighedNormalDist(mp);
+  console.log("Stat of scores:");
+  console.log(`avg=${avg}, std=${std}`);
+  console.log(Array.from(mp.entries()).sort());
+
+  const stat = [];
+  for (var i = 0; i < attr_index.length; i++) {
+    stat[i] = { n_test: 0, n_control: 0, s_test: 0, s_control: 0 };
+  }
+
+  function newScore(score) {
+    return (score - avg) / std;
+    return signedExp(2, (score - avg) / std) - 1;
+  }
+
+  ratingHistory.forEach(({ id, score }) => {
+    const s = newScore(score);
+    attrs.forEach((attr) => {
+      if (char2set[id].has(attr)) {
+        stat[attr].n_test++;
+        stat[attr].s_test += s;
+      } else {
+        stat[attr].n_control++;
+        stat[attr].s_control += s;
+      }
+    });
+  });
+
+  const result = [];
+  for (var i = 0; i < attr_index.length; i++) {
+    if (!attrSet.has(i)) {
+      rating[i] = null;
+      continue;
+    }
+    const n_test = stat[i].n_test;
+    const n_control = stat[i].n_control;
+    const s_test = stat[i].s_test;
+    const s_control = stat[i].s_control;
+    if (n_test === 0 || n_control === 0) {
+      rating[i] = null;
+      continue;
+    }
+    const avg1 = s_test / n_test;
+    const avg2 = s_control / n_control;
+    // const [avg1, std1] = normalDist(test);
+    // const [avg2, std2] = normalDist(control);
+    const delta = avg1 - avg2;
+    const countFactor = Math.min(1.8, Math.max(0, Math.log((n_test * n_control) / (n_test + n_control) / 2 + 1) - 0.7));
+    // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
+    const rt = delta * countFactor;
+    rating[i] = {
+      attr: i,
+      rating: rt,
+      avg1: avg1,
+      // std1: std1,
+      n1: n_test,
+      avg2: avg2,
+      // std2: std2,
+      n2: n_control,
+      delta: delta,
+      countFactor: countFactor,
+      // stdFactor: stdFactor,
+    };
+    result.push(rating[i]);
+  }
+
+  result.sort((a, b) => {
+    return b.rating - a.rating;
+  });
+
+  var cnt = 0;
+  var tmp = "";
+  for (var i = 0; i < result.length; i++) {
+    if (result[i].count <= 2) continue;
+    if (Math.abs(result[i].rating) < 0.05) continue;
+
+    const attr_name = attr_index[result[i].attr];
+    var attr_tag = attr_name;
+    const attr_url = attr2URL(result[i].attr);
+    if (attr_url !== null) {
+      attr_tag = `<a href="${"https://zh.moegirl.org.cn/" + attr_url}" target="_blank">${attr_name}</a>`;
+    }
+    cnt++;
+    tmp += `<tr><th scope="row">${cnt}</th><td>${attr_tag}</td>
+  <td style="background: ${colorize(result[i].rating, 4)}">${result[i].rating.toFixed(2)}</td>
+  <td>${result[i].avg1.toFixed(2)}/${result[i].n1}
+    ${colorspan(result[i].delta, 8)}
+    ${colorspan2(result[i].countFactor, 0, 1.8)}
+  </td>
+  </tr>`;
+  }
+  if (tmp.length > 0) {
+    document.getElementById("ranking-hint").style.display = "none";
+    document.getElementById("ranking-table").style.display = "block";
+    document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
+  }
+
+  compute_button.innerText = "刷新结果";
+  compute_button.removeAttribute("disabled");
+  console.log(`Compute finished result.length=${cnt} attr_count=${attrMap.size} time=${Date.now() - t}ms`);
 }
 
 function makeDebounce(callback, wait) {
@@ -762,7 +769,26 @@ function isMobile() {
 }
 
 const scheduleSaveState = makeDebounce(saveState, 200);
-const scheduleCompute = makeDebounce(compute, isMobile() ? 200 : 50);
+const scheduleCompute = makeDebounce(
+  () => {
+    const compute_button = document.getElementById("compute-button");
+
+    if (compute_button.hasAttribute("disabled")) {
+      console.warn("is a previous computation unfinished?");
+    }
+
+    compute_button.innerText = "计算中...";
+    compute_button.setAttribute("disabled", "");
+
+    setTimeout(() => {
+      compute();
+    }, 0);
+  },
+  isMobile() ? 200 : 50
+);
+document.getElementById("auto-compute").addEventListener("change", () => {
+  if (document.getElementById("auto-compute").checked) scheduleCompute();
+});
 
 function predict(subset) {
   const t = Date.now();
