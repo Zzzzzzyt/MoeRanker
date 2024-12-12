@@ -878,7 +878,7 @@ function predict(subset) {
       });
     }
     scores2.sort((a, b) => {
-      return -a.weight + b.weight;
+      return -a.score + b.score;
     });
     impsum += Math.max(0, 12 - scores.length);
     if (sum !== 0) {
