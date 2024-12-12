@@ -99,7 +99,25 @@ function packState() {
   }
   const checkedSubsets2 = JSON.stringify(checkedSubsets);
 
-  const pack = { dataFormat: LATEST_FORMAT, ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets2 };
+  const settings = JSON.stringify({
+    score: {
+      random: document.getElementById("tab-score-random").checked,
+      forceMapping: document.getElementById("tab-score-force-mapping").checked,
+      kImage: document.getElementById("tab-score-k-image").value,
+    },
+    predict: {
+      forceMapping: document.getElementById("tab-predict-force-mapping").checked,
+    },
+  });
+
+  const pack = {
+    dataFormat: LATEST_FORMAT,
+    ratingHistory: ratingHistory2,
+    currentSubset: currentSubset2,
+    currentIndex: currentIndex2,
+    checkedSubsets: checkedSubsets2,
+    settings: settings,
+  };
   // console.log("packed:", pack);
   return pack;
 }
@@ -127,7 +145,7 @@ function unpackState(pack) {
   const currentSubset2 = JSON.parse(pack.currentSubset);
   var currentIndex2 = parseInt(pack.currentIndex);
 
-  if (!pack.dataFormat) {
+  if (!packFormat) {
     console.log("Old packed data detected");
     upgradeRatingHistory(ratingHistory2);
   }
@@ -164,6 +182,20 @@ function unpackState(pack) {
     currentSubset.push(char2id.get(name));
   });
 
+  if (pack.settings) {
+    const settings = JSON.parse(pack.settings);
+    if (settings.score) {
+      const scoreSettings = settings.score;
+      document.getElementById("tab-score-random").checked = scoreSettings.random;
+      document.getElementById("tab-score-force-mapping").checked = scoreSettings.forceMapping;
+      document.getElementById("tab-score-k-image").value = Math.max(parseInt(scoreSettings.kImage), 0);
+    }
+    if (settings.predict) {
+      const predictSettings = settings.predict;
+      document.getElementById("tab-predict-force-mapping").checked = predictSettings.forceMapping;
+    }
+  }
+
   compute();
   return true;
 }
@@ -177,6 +209,7 @@ function saveState() {
     window.localStorage.setItem("currentSubset", pack.currentSubset);
     window.localStorage.setItem("currentIndex", pack.currentIndex);
     window.localStorage.setItem("checkedSubsets", pack.checkedSubsets);
+    window.localStorage.setItem("settings", pack.settings);
   } catch (e) {
     console.error(e);
     return false;
@@ -188,12 +221,14 @@ function saveState() {
 function loadState() {
   if (!useStorage) return false;
   try {
-    const dataFormat = window.localStorage.getItem("dataFormat");
-    const ratingHistory2 = window.localStorage.getItem("ratingHistory");
-    const currentSubset2 = window.localStorage.getItem("currentSubset");
-    const currentIndex2 = window.localStorage.getItem("currentIndex");
-    const checkedSubsets = window.localStorage.getItem("checkedSubsets");
-    return unpackState({ dataFormat: dataFormat, ratingHistory: ratingHistory2, currentSubset: currentSubset2, currentIndex: currentIndex2, checkedSubsets: checkedSubsets });
+    return unpackState({
+      dataFormat: window.localStorage.getItem("dataFormat"),
+      ratingHistory: window.localStorage.getItem("ratingHistory"),
+      currentSubset: window.localStorage.getItem("currentSubset"),
+      currentIndex: window.localStorage.getItem("currentIndex"),
+      checkedSubsets: window.localStorage.getItem("checkedSubsets"),
+      settings: window.localStorage.getItem("settings"),
+    });
   } catch (e) {
     console.error(e);
     return false;
@@ -222,6 +257,7 @@ function uploadState() {
   const element = document.getElementById("upload_state");
   if (element.files.length == 1) {
     const file = element.files[0];
+    element.value = "";
     console.log("file uploaded:", file);
     file.text().then((text) => {
       const pack = JSON.parse(text);
@@ -232,11 +268,11 @@ function uploadState() {
   }
 }
 
-function printToPage(msg) {
-  document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
-}
-
 function fetchData() {
+  function printToPage(msg) {
+    document.getElementById("loading-output").innerHTML += `<pre style="margin:0;">${msg}</pre>`;
+  }
+
   var importanceTmp;
 
   var fetchMain = fetch("data/data_min.json")
@@ -319,7 +355,7 @@ function fetchData() {
     } else {
       if (useStorage) {
         const msg = "localStorage available but loading failed. Is this the first session?";
-        console.warn(msg);
+        console.info(msg);
         printToPage(msg);
       }
       ratingHistory = [];
@@ -790,6 +826,12 @@ const scheduleCompute = makeDebounce(
   },
   isMobile() ? 200 : 50
 );
+
+["tab-score-random", "tab-score-force-mapping", "tab-score-k-image", "tab-predict-force-mapping"].forEach((id) => {
+  document.getElementById(id).addEventListener("change", () => {
+    scheduleSaveState();
+  });
+});
 document.getElementById("auto-compute").addEventListener("change", () => {
   if (document.getElementById("auto-compute").checked) scheduleCompute();
 });
