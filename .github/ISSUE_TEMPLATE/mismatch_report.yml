@@ -1,0 +1,28 @@
+name: 人物映射错误
+description: 图片错了？
+title: "人物映射错误: "
+labels: ["mismatch"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        若有多个错误，对于每个错误请单独创建一个issue。
+  - type: input
+    id: moe_url
+    attributes:
+      label: 萌百URL
+      description: 可以在萌百人物页面的URL中找到，或直接从MoeRanker复制
+      placeholder: 如：https://zh.moegirl.org.cn/御坂美琴 或 御坂美琴
+    validations:
+      required: true
+  - type: input
+    id: bgm_id
+    attributes:
+      label: 正确的Bangumi ID
+      description: 可以在Bangumi人物页面的URL中找到（若该人物未被Bangumi收录，或您无法确定，请留空）
+      placeholder: 如：3575
+  - type: textarea
+    id: extra
+    attributes:
+      label: 备注
+      description: 还有什么问题？
