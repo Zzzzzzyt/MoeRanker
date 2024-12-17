@@ -7,6 +7,8 @@ body:
     attributes:
       value: |
         若有多个错误，对于每个错误请单独创建一个issue。
+        
+        友情提醒：可以适当提高候选图片数，看看有没有正确的图片。
   - type: input
     id: moe_url
     attributes:
