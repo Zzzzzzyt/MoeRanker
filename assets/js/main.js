@@ -743,7 +743,7 @@ function compute() {
     const delta = avg1 - avg2;
     const countFactor = Math.min(1.8, Math.max(0, Math.log((n_test * n_control) / (n_test + n_control) / 2 + 1) - 0.7));
     // const stdFactor = 1 / (Math.max(2, std1) * Math.max(2, std2));
-    const rt = delta * countFactor;
+    const rt = delta * countFactor * 10;
     rating[i] = {
       attr: i,
       rating: rt,
@@ -929,7 +929,7 @@ function resetPrediction() {
         tmp2 += tmp3 + " ";
       }
       // tmp2 += `${colorspan2(score.score, -3, 8)} ${colorspan2(score.rating, -3, 8)} ${colorspan(score.weight, 0, 3)}`;
-      tmp2 += `${colorspan2(score.score / cur.impsum, -1, 1)}`;
+      tmp2 += `${colorspan2(score.score / cur.impsum, -1.5, 1.5)}`;
     }
     tmp += `<tr><td>${i + 1}</td>
     <td><a href="https://zh.moegirl.org.cn/${name2URL(char_index[cur.id])}" target="_blank">${char_index[cur.id]}</a></td>
