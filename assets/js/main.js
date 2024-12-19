@@ -504,7 +504,6 @@ function refresh(index) {
   const ids = moegirl2bgm[char];
   var tmp = "";
   const lim = Number.parseInt(document.getElementById("tab-score-k-image").value);
-  console.log(ids);
   if (ids !== undefined) {
     for (var j = 0; j < ids.length && j < lim; j++) {
       tmp += `<a href="https://bgm.tv/character/${ids[j]}" target="_blank">
@@ -651,10 +650,14 @@ function upgradeRatingHistory(his) {
 function compute() {
   const compute_button = document.getElementById("compute-button");
 
-  if (ratingHistory.length === 0) {
-    console.log("No data to compute");
+  function resetComputeButton() {
     compute_button.innerText = "刷新结果";
     compute_button.removeAttribute("disabled");
+  }
+
+  if (ratingHistory.length === 0) {
+    console.log("No data to compute");
+    resetComputeButton();
     return;
   }
 
@@ -692,7 +695,7 @@ function compute() {
   const [avg, std] = weighedNormalDist(mp);
   console.log("Stat of scores:");
   console.log(`avg=${avg}, std=${std}`);
-  console.log(Array.from(mp.entries()).sort());
+  console.log(Array.from(mp.entries()).sort((a, b) => a[0] - b[0]));
 
   const stat = [];
   for (var i = 0; i < attr_index.length; i++) {
@@ -701,10 +704,12 @@ function compute() {
 
   function newScore(score) {
     return (score - avg) / std;
-    return signedExp(2, (score - avg) / std) - 1;
   }
 
-  ratingHistory.forEach(({ id, score }) => {
+  for (var i = 0; i < ratingHistory.length; i++) {
+    const id = ratingHistory[i].id;
+    const score = ratingHistory[i].score;
+    if (score === null) continue;
     const s = newScore(score);
     attrs.forEach((attr) => {
       if (char2set[id].has(attr)) {
@@ -715,7 +720,7 @@ function compute() {
         stat[attr].s_control += s;
       }
     });
-  });
+  }
 
   const result = [];
   for (var i = 0; i < attr_index.length; i++) {
@@ -786,8 +791,7 @@ function compute() {
     document.getElementById("ranking-table").getElementsByTagName("tbody")[0].innerHTML = tmp;
   }
 
-  compute_button.innerText = "刷新结果";
-  compute_button.removeAttribute("disabled");
+  resetComputeButton();
   console.log(`Compute finished result.length=${cnt} attr_count=${attrMap.size} time=${Date.now() - t}ms`);
 }
 
