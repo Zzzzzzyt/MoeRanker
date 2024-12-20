@@ -53,6 +53,8 @@ const subsets = [
   // { name: "RWBY_subset", display: "RWBY", checked: false },
 ];
 
+const ignoreAttr = new Set(["AB型", "A型", "B型", "O型", "RH-O型", "RH型", "稀有血型", "第一人称Atashi", "特殊第一人称", "与声优同生日"]);
+
 var currentIndex = 0;
 var currentSubset = null;
 
@@ -771,6 +773,7 @@ function compute() {
     if (Math.abs(result[i].rating) < 0.05) continue;
 
     const attr_name = attr_index[result[i].attr];
+    if (ignoreAttr.has(attr_name)) continue;
     var attr_tag = attr_name;
     const attr_url = attr2URL(result[i].attr);
     if (attr_url !== null) {
@@ -849,9 +852,9 @@ function predict(subset) {
     const scores = [];
     char2attr[i].forEach((attr) => {
       const rt = rating[attr];
-      if (rt !== null) {
-        scores.push({ rating: rt.rating, attr: attr });
-      }
+      if (rt === null) return;
+      if (ignoreAttr.has(attr_index[attr])) return;
+      scores.push({ rating: rt.rating, attr: attr });
     });
     scores.sort((a, b) => {
       return -(a.rating - b.rating);
@@ -924,9 +927,9 @@ function resetPrediction() {
       const score = cur.scores[j];
       const tmp3 = attr_index[score.attr];
       if (attr_index[score.attr].article !== undefined) {
-        tmp2 += `<a href="https://zh.moegirl.org.cn/${name2URL(attr_index[score.attr].article)}" target="_blank">${tmp3}</a> `;
+        tmp2 += ` <a href="https://zh.moegirl.org.cn/${name2URL(attr_index[score.attr].article)}" target="_blank">${tmp3}</a>`;
       } else {
-        tmp2 += tmp3 + " ";
+        tmp2 += " " + tmp3;
       }
       // tmp2 += `${colorspan2(score.score, -3, 8)} ${colorspan2(score.rating, -3, 8)} ${colorspan(score.weight, 0, 3)}`;
       tmp2 += `${colorspan2(score.score / cur.impsum, -1.5, 1.5)}`;
