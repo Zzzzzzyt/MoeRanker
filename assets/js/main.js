@@ -4,7 +4,9 @@ const LATEST_FORMAT = "v2";
 
 const subsets = [
   { name: "*", display: "全部", checked: false },
-  { name: "bgm200_subset", display: "Bangumi top 200", checked: true },
+  { name: "questionaire1_subset", display: "XP统一检测全国甲卷", checked: true },
+  { name: "questionaire2_subset", display: "XP统一检测全国乙卷", checked: true },
+  { name: "bgm200_subset", display: "Bangumi top 200", checked: false },
   { name: "bgm2000_subset", display: "Bangumi top 2000", checked: false },
   { name: "bgm20000_subset", display: "Bangumi top 20000", checked: false },
   { name: "kyoani_subset", display: "京阿尼合集", checked: false },
@@ -53,7 +55,18 @@ const subsets = [
   // { name: "RWBY_subset", display: "RWBY", checked: false },
 ];
 
-const ignoreAttr = new Set(["AB型", "A型", "B型", "O型", "RH-O型", "RH型", "稀有血型", "第一人称Atashi", "特殊第一人称", "与声优同生日"]);
+const ignoreAttr = new Set([
+  "AB型",
+  "A型",
+  "B型",
+  "O型",
+  "RH-O型",
+  "RH型",
+  "稀有血型",
+  "第一人称Atashi",
+  "特殊第一人称",
+  "与声优同生日",
+]);
 
 var currentIndex = 0;
 var currentSubset = null;
@@ -509,7 +522,10 @@ function refresh(index) {
   if (ids !== undefined) {
     for (var j = 0; j < ids.length && j < lim; j++) {
       tmp += `<a href="https://bgm.tv/character/${ids[j]}" target="_blank">
-      <img src="${getImageURL(ids[j], "medium")}" alt="人物图片" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
+      <img src="${getImageURL(
+        ids[j],
+        "medium"
+      )}" alt="人物图片" style="padding:10px;max-height:500px;max-width:100%;object-fit:contain"/></a>`;
     }
   } else if (lim > 0) {
     tmp += `<a href="https://bgm.tv/character/13004" target="_blank">
