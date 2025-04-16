@@ -80,7 +80,7 @@ var char2id = new Map();
 var attr2id = new Map();
 var rating = null;
 var ratingHistory = null;
-var images = null;
+// var images = null;
 
 const useStorage = storageAvailable("localStorage");
 
@@ -348,16 +348,16 @@ function fetchData() {
       importanceTmp = data;
     });
 
-  var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
-    .then((response) => response.json())
-    .then((data) => {
-      const msg = `image preload map loaded: length=${Object.keys(data).length}`;
-      printToPage(msg);
-      console.log(msg);
-      images = data;
-    });
+  // var fetchImageMap = fetch("data/bgm_images_medium_mapped.json")
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     const msg = `image preload map loaded: length=${Object.keys(data).length}`;
+  //     printToPage(msg);
+  //     console.log(msg);
+  //     images = data;
+  //   });
 
-  Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchImageMap]).then(() => {
+  Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).then(() => {
     for (var i = 0; i < attr_index.length; i++) {
       importance.push(importanceTmp[attr_index[i]]);
     }
@@ -413,15 +413,15 @@ function attr2URL(attrid) {
 }
 
 function getImageURL(bid, type) {
-  if (type === undefined) {
-    type = "medium";
-  }
-  if (type === "medium" && images !== null) {
-    var url = images[bid];
-    if (url !== undefined) {
-      return "https://lain.bgm.tv/r/400/pic/crt/l/" + url;
-    }
-  }
+  // if (type === undefined) {
+  //   type = "medium";
+  // }
+  // if (type === "medium" && images !== null) {
+  //   var url = images[bid];
+  //   if (url !== undefined) {
+  //     return "https://lain.bgm.tv/r/400/pic/crt/l/" + url;
+  //   }
+  // }
   return `https://api.bgm.tv/v0/characters/${bid}/image?type=${type}`;
 }
 
