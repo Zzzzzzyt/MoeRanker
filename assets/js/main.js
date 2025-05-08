@@ -51,7 +51,7 @@ const subsets = [
   { name: "PCR_subset", display: "公主连结Re:Dive", checked: false },
   { name: "housamo_subset", display: "炼金工房系列", checked: false },
   // { name: "atelier_subset", display: "东京放课后召唤师", checked: false },
-  { name: "kamen_rider_subset", display: "假面骑士系列", checked: false },
+  // { name: "kamen_rider_subset", display: "假面骑士系列", checked: false },
   { name: "danganronpa_subset", display: "弹丸论破", checked: false },
   { name: "persona_subset", display: "女神异闻录系列", checked: false },
   // { name: "RWBY_subset", display: "RWBY", checked: false },
