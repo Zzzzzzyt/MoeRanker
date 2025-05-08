@@ -20,6 +20,7 @@ const subsets = [
   { name: "honkai_starrail_subset", display: "崩坏：星穹铁道", checked: false },
   { name: "zzz_subset", display: "绝区零", checked: false },
   { name: "wuthering_waves_subset", display: "鸣潮", checked: false },
+  { name: "snowbreak_subset", display: "尘白禁区", checked: false },
   { name: "onmyoji_subset", display: "阴阳师", checked: false },
   { name: "fate_subset", display: "Fate系列", checked: false },
   { name: "jojo_subset", display: "JOJO系列", checked: false },
