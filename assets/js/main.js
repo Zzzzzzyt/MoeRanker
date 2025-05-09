@@ -3,59 +3,59 @@
 const LATEST_FORMAT = "v2";
 
 const subsets = [
-  { name: "*", display: "全部", checked: false },
-  { name: "questionaire1_subset", display: "XP统一检测全国甲卷", checked: true },
-  { name: "questionaire2_subset", display: "XP统一检测全国乙卷", checked: true },
-  { name: "bgm200_subset", display: "Bangumi top 200", checked: false },
-  { name: "bgm2000_subset", display: "Bangumi top 2000", checked: false },
-  { name: "bgm20000_subset", display: "Bangumi top 20000", checked: false },
-  { name: "kyoani_subset", display: "京阿尼合集", checked: false },
-  { name: "touhou_new_subset", display: "东方project新作", checked: false },
-  { name: "touhou_old_subset", display: "东方project旧作", checked: false },
-  { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false },
-  // { name: "railgun_subset", display: "超炮Only", checked: false },
-  { name: "arknights_subset", display: "明日方舟", checked: false },
-  { name: "genshin_subset", display: "原神", checked: false },
-  { name: "honkai3_subset", display: "崩坏3", checked: false },
-  { name: "honkai_starrail_subset", display: "崩坏：星穹铁道", checked: false },
-  { name: "zzz_subset", display: "绝区零", checked: false },
-  { name: "wuthering_waves_subset", display: "鸣潮", checked: false },
-  { name: "snowbreak_subset", display: "尘白禁区", checked: false },
-  { name: "onmyoji_subset", display: "阴阳师", checked: false },
-  { name: "fate_subset", display: "Fate系列", checked: false },
-  { name: "jojo_subset", display: "JOJO系列", checked: false },
-  // { name: "gundam_subset", display: "高达系列", checked: false },
-  { name: "naruto_subset", display: "火影忍者", checked: false },
-  { name: "bleach_subset", display: "死神(BLEACH)", checked: false },
-  { name: "madoka_subset", display: "魔法少女小圆", checked: false },
-  { name: "AOT_subset", display: "进击的巨人", checked: false },
-  { name: "jujutsu_subset", display: "咒术回战", checked: false },
-  // { name: "lol_subset", display: "英雄联盟LOL", checked: false },
-  // { name: "vocaloid_subset", display: "虚拟歌姬", checked: false },
-  // { name: "conan_subset", display: "名侦探柯南", checked: false },
-  { name: "lovelive_subset", display: "LoveLive!系列", checked: false },
-  { name: "bangdream_subset", display: "BanG Dream!系列", checked: false },
-  // { name: "revue_subset", display: "少女☆歌剧", checked: false },
-  { name: "derby_subset", display: "赛马娘", checked: false },
-  { name: "kancolle_subset", display: "舰队Collection", checked: false },
-  { name: "kanR_subset", display: "战舰少女", checked: false },
-  { name: "azur_lane_subset", display: "碧蓝航线", checked: false },
-  { name: "blue_archive_subset", display: "蔚蓝档案", checked: false },
-  // { name: "girls_frontline_subset", display: "少女前线", checked: false },
-  // { name: "GUP_subset", display: "少女与战车", checked: false },
-  // { name: "key3_subset", display: "Key社三部曲", checked: false },
-  // { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false },
-  // { name: "pokemon_subset", display: "宝可梦", checked: false },
-  // { name: "pony_subset", display: "彩虹小马", checked: false },
-  { name: "idolmaster_subset", display: "偶像大师系列", checked: false },
-  { name: "ES_subset", display: "偶像梦幻祭", checked: false },
-  { name: "PCR_subset", display: "公主连结Re:Dive", checked: false },
-  { name: "housamo_subset", display: "炼金工房系列", checked: false },
-  // { name: "atelier_subset", display: "东京放课后召唤师", checked: false },
-  // { name: "kamen_rider_subset", display: "假面骑士系列", checked: false },
-  { name: "danganronpa_subset", display: "弹丸论破", checked: false },
-  { name: "persona_subset", display: "女神异闻录系列", checked: false },
-  // { name: "RWBY_subset", display: "RWBY", checked: false },
+  { name: "*", display: "全部", checked: false, conservative: true },
+  { name: "questionaire1_subset", display: "XP统一检测全国甲卷", checked: true, conservative: false },
+  { name: "questionaire2_subset", display: "XP统一检测全国乙卷", checked: true, conservative: false },
+  { name: "bgm200_subset", display: "Bangumi top 200", checked: false, conservative: false },
+  { name: "bgm2000_subset", display: "Bangumi top 2000", checked: false, conservative: true },
+  { name: "bgm20000_subset", display: "Bangumi top 20000", checked: false, conservative: true },
+  { name: "kyoani_subset", display: "京阿尼合集", checked: false, conservative: true },
+  { name: "touhou_new_subset", display: "东方project新作", checked: false, conservative: false },
+  { name: "touhou_old_subset", display: "东方project旧作", checked: false, conservative: false },
+  { name: "toaru_subset", display: "魔禁(超炮)系列", checked: false, conservative: true },
+  // { name: "railgun_subset", display: "超炮Only", checked: false, conservative: true },
+  { name: "arknights_subset", display: "明日方舟", checked: false, conservative: true },
+  { name: "genshin_subset", display: "原神", checked: false, conservative: true },
+  { name: "honkai3_subset", display: "崩坏3", checked: false, conservative: true },
+  { name: "honkai_starrail_subset", display: "崩坏：星穹铁道", checked: false, conservative: true },
+  { name: "zzz_subset", display: "绝区零", checked: false, conservative: true },
+  { name: "wuthering_waves_subset", display: "鸣潮", checked: false, conservative: true },
+  { name: "snowbreak_subset", display: "尘白禁区", checked: false, conservative: false },
+  { name: "onmyoji_subset", display: "阴阳师", checked: false, conservative: true },
+  { name: "fate_subset", display: "Fate系列", checked: false, conservative: true },
+  { name: "jojo_subset", display: "JOJO系列", checked: false, conservative: true },
+  // { name: "gundam_subset", display: "高达系列", checked: false, conservative: true },
+  { name: "naruto_subset", display: "火影忍者", checked: false, conservative: true },
+  { name: "bleach_subset", display: "死神(BLEACH)", checked: false, conservative: true },
+  { name: "madoka_subset", display: "魔法少女小圆", checked: false, conservative: true },
+  { name: "AOT_subset", display: "进击的巨人", checked: false, conservative: true },
+  { name: "jujutsu_subset", display: "咒术回战", checked: false, conservative: true },
+  // { name: "lol_subset", display: "英雄联盟LOL", checked: false, conservative: true },
+  // { name: "vocaloid_subset", display: "虚拟歌姬", checked: false, conservative: true },
+  // { name: "conan_subset", display: "名侦探柯南", checked: false, conservative: true },
+  { name: "lovelive_subset", display: "LoveLive!系列", checked: false, conservative: true },
+  { name: "bangdream_subset", display: "BanG Dream!系列", checked: false, conservative: true },
+  // { name: "revue_subset", display: "少女☆歌剧", checked: false, conservative: true },
+  { name: "derby_subset", display: "赛马娘", checked: false, conservative: true },
+  { name: "kancolle_subset", display: "舰队Collection", checked: false, conservative: true },
+  { name: "kanR_subset", display: "战舰少女", checked: false, conservative: true },
+  { name: "azur_lane_subset", display: "碧蓝航线", checked: false, conservative: true },
+  { name: "blue_archive_subset", display: "蔚蓝档案", checked: false, conservative: true },
+  // { name: "girls_frontline_subset", display: "少女前线", checked: false, conservative: true },
+  // { name: "GUP_subset", display: "少女与战车", checked: false, conservative: true },
+  // { name: "key3_subset", display: "Key社三部曲", checked: false, conservative: true },
+  // { name: "pokemon_char_subset", display: "宝可梦系列角色", checked: false, conservative: true },
+  // { name: "pokemon_subset", display: "宝可梦", checked: false, conservative: true },
+  // { name: "pony_subset", display: "彩虹小马", checked: false, conservative: true },
+  { name: "idolmaster_subset", display: "偶像大师系列", checked: false, conservative: true },
+  { name: "ES_subset", display: "偶像梦幻祭", checked: false, conservative: true },
+  { name: "PCR_subset", display: "公主连结Re:Dive", checked: false, conservative: true },
+  { name: "housamo_subset", display: "炼金工房系列", checked: false, conservative: true },
+  // { name: "atelier_subset", display: "东京放课后召唤师", checked: false, conservative: true },
+  // { name: "kamen_rider_subset", display: "假面骑士系列", checked: false, conservative: true },
+  { name: "danganronpa_subset", display: "弹丸论破", checked: false, conservative: true },
+  { name: "persona_subset", display: "女神异闻录系列", checked: false, conservative: true },
+  // { name: "RWBY_subset", display: "RWBY", checked: false, conservative: true },
 ];
 
 const ignoreAttr = new Set([
@@ -79,6 +79,7 @@ var attr2article;
 var importance = [];
 var char2set = [];
 var moegirl2bgm;
+var bgm_info;
 var char2id = new Map();
 var attr2id = new Map();
 var rating = null;
@@ -121,10 +122,12 @@ function packState() {
     score: {
       random: document.getElementById("tab-score-random").checked,
       forceMapping: document.getElementById("tab-score-force-mapping").checked,
+      conservative: document.getElementById("tab-score-conservative").checked,
       kImage: document.getElementById("tab-score-k-image").value,
     },
     predict: {
       forceMapping: document.getElementById("tab-predict-force-mapping").checked,
+      conservative: document.getElementById("tab-predict-conservative").checked,
     },
   });
 
@@ -207,10 +210,16 @@ function unpackState(pack) {
       document.getElementById("tab-score-random").checked = scoreSettings.random;
       document.getElementById("tab-score-force-mapping").checked = scoreSettings.forceMapping;
       document.getElementById("tab-score-k-image").value = Math.max(parseInt(scoreSettings.kImage), 0);
+      if (scoreSettings.conservative !== undefined) {
+        document.getElementById("tab-score-conservative").checked = scoreSettings.conservative;
+      }
     }
     if (settings.predict) {
       const predictSettings = settings.predict;
       document.getElementById("tab-predict-force-mapping").checked = predictSettings.forceMapping;
+      if (predictSettings.conservative !== undefined) {
+        document.getElementById("tab-predict-conservative").checked = predictSettings.conservative;
+      }
     }
   }
 
@@ -293,11 +302,11 @@ function fetchData() {
 
   var importanceTmp;
 
-  var fetchMain = fetch("data/data_min.json")
+  const fetchMain = fetch("data/data_min.json")
     .then((response) => response.json())
     .then((data) => {
       ({ char_index, attr_index, char2attr, attr2article } = data);
-      console.log(char_index);
+      // console.log(char_index);
       for (var i = 0; i < char_index.length; i++) {
         char2id.set(char_index[i], i);
         char2set.push(new Set(char2attr[i]));
@@ -310,11 +319,20 @@ function fetchData() {
       console.log(msg);
     });
 
-  var fetchMap = fetch("data/moegirl2bgm.json")
+  const fetchMap = fetch("data/moegirl2bgm.json")
     .then((response) => response.json())
     .then((data) => {
       moegirl2bgm = data;
       const msg = `mapping loaded: moegirl2bgm.length=${Object.keys(moegirl2bgm).length}`;
+      printToPage(msg);
+      console.log(msg);
+    });
+
+  const fetchInfo = fetch("data/bgm_info.json")
+    .then((response) => response.json())
+    .then((data) => {
+      bgm_info = data;
+      const msg = `bgm info loaded: length=${Object.keys(bgm_info).length}`;
       printToPage(msg);
       console.log(msg);
     });
@@ -342,7 +360,7 @@ function fetchData() {
     );
   }
 
-  var fetchImportance = fetch("data/importance.json")
+  const fetchImportance = fetch("data/importance.json")
     .then((response) => response.json())
     .then((data) => {
       const msg = `importance loaded: length=${Object.keys(data).length}`;
@@ -360,7 +378,7 @@ function fetchData() {
   //     images = data;
   //   });
 
-  Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap]).then(() => {
+  Promise.all([Promise.all(fetchSubset), fetchMain, fetchImportance, fetchMap, fetchInfo]).then(() => {
     for (var i = 0; i < attr_index.length; i++) {
       importance.push(importanceTmp[attr_index[i]]);
     }
@@ -454,16 +472,20 @@ function displaySubsets() {
 function genSubsetlist(tab) {
   var tmpHtml = "";
   for (var i = 0; i < subsets.length; i++) {
-    var cnt = 0;
+    var cnt1 = 0, cnt2 = 0;
     for (var j of subsets[i].subset) {
-      if (moegirl2bgm[char_index[j]] !== undefined) cnt++;
+      if (moegirl2bgm[char_index[j]] !== undefined) cnt1++;
+      if (conservativeFilter(j)) cnt2++;
+    }
+    if (!subsets[i].conservative) {
+      cnt2 = cnt1;
     }
     tmpHtml += `<div class="form-check">
     <input class="form-check-input" type="checkbox" id="${tab}-subset-${i}" ${subsets[i].checked ? "checked" : ""}
      ${subsets[i].subset.length === 0 ? "disabled" : ""} />
     <label class="form-check-label" for="${tab}-subset-${i}"> 
-    ${subsets[i].display} <span style="background-color:${colorize2(cnt / subsets[i].subset.length, 0, 1)}">
-    (${cnt}/${subsets[i].subset.length})</span></label>
+    ${subsets[i].display} <span style="background-color:${colorize2(cnt2 / subsets[i].subset.length, 0, 1)}">
+    (${cnt2}/${cnt1}/${subsets[i].subset.length})</span></label>
     </div>`;
   }
   return tmpHtml;
@@ -538,24 +560,26 @@ function refresh(index) {
 }
 
 function genSubset(tab) {
+  const forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
+  const conservative = document.getElementById(`${tab}-conservative`).checked;
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
     subsets[i].checked = document.getElementById(`${tab}-subset-${i}`).checked;
     if (subsets[i].checked) {
       for (var j of subsets[i].subset) {
+        if (forceMapping && moegirl2bgm[char_index[j]] === undefined) {
+          continue;
+        }
+        if (conservative && subsets[i].conservative) {
+          if (!conservativeFilter(j)) {
+            continue;
+          }
+        }
         tmpSet.add(j);
       }
     }
   }
-  const forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
-  const ret = [];
-  tmpSet.forEach((val) => {
-    if (forceMapping && moegirl2bgm[char_index[val]] === undefined) {
-      return;
-    }
-    ret.push(val);
-  });
-  return ret;
+  return Array.from(tmpSet);
 }
 
 function reset() {
@@ -967,6 +991,17 @@ function changeTab() {
   }
   toggle(radios[0], "tab-score");
   toggle(radios[1], "tab-predict");
+}
+
+function conservativeFilter(charid) {
+  const bgm_ids = moegirl2bgm[char_index[charid]]
+  if (bgm_ids === undefined || bgm_ids.length !== 1) {
+    return false;
+  }
+  if (bgm_info[bgm_ids[0]] === undefined || bgm_info[bgm_ids[0]] <= 2) {
+    return false;
+  }
+  return true;
 }
 
 function weighedNormalDist(arr) {
