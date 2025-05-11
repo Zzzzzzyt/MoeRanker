@@ -122,7 +122,7 @@
               <rp>(</rp>
               <rt>X P检测器</rt>
               <rp>)</rp> </ruby
-            ><sup>1.5.8</sup>
+            ><sup>1.5.9</sup>
           </h1>
           <p>
             by Zzzyt 2023-2025, Github@<a href="https://github.com/Zzzzzzyt/MoeRanker" target="_blank">Zzzzzzyt/MoeRanker</a><br />
@@ -150,6 +150,10 @@
         </div>
         <div id="update-history" style="max-width: 400px; flex-grow: 1; overflow-y: auto; max-height: 360px; padding-left: 20px">
           <h2>更新日志</h2>
+          <p>
+            v1.5.9<br />
+            - <b>加入性别筛选</b>
+          </p>
           <p>
             v1.5.8<br />
             - <b>加入保守模式</b>
@@ -337,6 +341,20 @@
               </div>
             </div>
             <div class="input-group" style="margin-bottom: 10px">
+              <div class="input-group-text">
+                <input id="tab-score-gender-male" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-score-gender-male">男</label></span>
+              </div>
+              <div class="input-group-text">
+                <input id="tab-score-gender-female" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-score-gender-female">女</label></span>
+              </div>
+              <div class="input-group-text">
+                <input id="tab-score-gender-unknown" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-score-gender-unknown">未知</label></span>
+              </div>
+            </div>
+            <div class="input-group" style="margin-bottom: 10px">
               <span class="input-group-text"><label for="tab-score-k-image">显示前</label></span>
               <input id="tab-score-k-image" type="number" min="0" max="20" class="form-control" value="1" onchange="refresh();" />
               <span class="input-group-text"><label for="tab-score-k-image">张</label></span>
@@ -366,6 +384,20 @@
               <div class="input-group-text">
                 <input id="tab-predict-conservative" type="checkbox" class="form-check-input mt-0" checked />
                 <span>&nbsp;<label for="tab-predict-conservative" style="text-decoration: underline dotted" title='试图排除"奇怪"的人物'>保守模式</label></span>
+              </div>
+            </div>
+            <div class="input-group" style="margin-bottom: 10px">
+              <div class="input-group-text">
+                <input id="tab-predict-gender-male" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-predict-gender-male">男</label></span>
+              </div>
+              <div class="input-group-text">
+                <input id="tab-predict-gender-female" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-predict-gender-female">女</label></span>
+              </div>
+              <div class="input-group-text">
+                <input id="tab-predict-gender-unknown" type="checkbox" class="form-check-input mt-0" checked />
+                <span>&nbsp;<label for="tab-predict-gender-unknown">未知</label></span>
               </div>
             </div>
             <button class="form-control btn btn-primary" style="margin-bottom: 10px" onclick="resetPrediction();">预测</button>

@@ -80,6 +80,7 @@ var importance = [];
 var char2set = [];
 var moegirl2bgm;
 var bgm_info;
+var gender_info;
 var char2id = new Map();
 var attr2id = new Map();
 var rating = null;
@@ -124,10 +125,16 @@ function packState() {
       forceMapping: document.getElementById("tab-score-force-mapping").checked,
       conservative: document.getElementById("tab-score-conservative").checked,
       kImage: document.getElementById("tab-score-k-image").value,
+      genderMale: document.getElementById("tab-score-gender-male").checked,
+      genderFemale: document.getElementById("tab-score-gender-female").checked,
+      genderUnknown: document.getElementById("tab-score-gender-unknown").checked,
     },
     predict: {
       forceMapping: document.getElementById("tab-predict-force-mapping").checked,
       conservative: document.getElementById("tab-predict-conservative").checked,
+      genderMale: document.getElementById("tab-predict-gender-male").checked,
+      genderFemale: document.getElementById("tab-predict-gender-female").checked,
+      genderUnknown: document.getElementById("tab-predict-gender-unknown").checked,
     },
   });
 
@@ -213,12 +220,30 @@ function unpackState(pack) {
       if (scoreSettings.conservative !== undefined) {
         document.getElementById("tab-score-conservative").checked = scoreSettings.conservative;
       }
+      if (scoreSettings.genderMale !== undefined) {
+        document.getElementById("tab-score-gender-male").checked = scoreSettings.genderMale;
+      }
+      if (scoreSettings.genderFemale !== undefined) {
+        document.getElementById("tab-score-gender-female").checked = scoreSettings.genderFemale;
+      }
+      if (scoreSettings.genderUnknown !== undefined) {
+        document.getElementById("tab-score-gender-unknown").checked = scoreSettings.genderUnknown;
+      }
     }
     if (settings.predict) {
       const predictSettings = settings.predict;
       document.getElementById("tab-predict-force-mapping").checked = predictSettings.forceMapping;
       if (predictSettings.conservative !== undefined) {
         document.getElementById("tab-predict-conservative").checked = predictSettings.conservative;
+      }
+      if (predictSettings.genderMale !== undefined) {
+        document.getElementById("tab-predict-gender-male").checked = predictSettings.genderMale;
+      }
+      if (predictSettings.genderFemale !== undefined) {
+        document.getElementById("tab-predict-gender-female").checked = predictSettings.genderFemale;
+      }
+      if (predictSettings.genderUnknown !== undefined) {
+        document.getElementById("tab-predict-gender-unknown").checked = predictSettings.genderUnknown;
       }
     }
   }
@@ -305,7 +330,7 @@ function fetchData() {
   const fetchMain = fetch("data/data_min.json")
     .then((response) => response.json())
     .then((data) => {
-      ({ char_index, attr_index, char2attr, attr2article } = data);
+      ({ char_index, attr_index, char2attr, attr2article, gender_info } = data);
       // console.log(char_index);
       for (var i = 0; i < char_index.length; i++) {
         char2id.set(char_index[i], i);
@@ -562,6 +587,10 @@ function refresh(index) {
 function genSubset(tab) {
   const forceMapping = document.getElementById(`${tab}-force-mapping`).checked;
   const conservative = document.getElementById(`${tab}-conservative`).checked;
+  const genderMale = document.getElementById(`${tab}-gender-male`).checked;
+  const genderFemale = document.getElementById(`${tab}-gender-female`).checked;
+  const genderUnknown = document.getElementById(`${tab}-gender-unknown`).checked;
+
   const tmpSet = new Set();
   for (var i = 0; i < subsets.length; i++) {
     subsets[i].checked = document.getElementById(`${tab}-subset-${i}`).checked;
@@ -579,7 +608,20 @@ function genSubset(tab) {
       }
     }
   }
-  return Array.from(tmpSet);
+  var ret = []
+  tmpSet.forEach((id) => {
+    const gender = gender_info[id];
+    if (gender == 0) {
+      if (genderMale) ret.push(id);
+    }
+    else if (gender == 1) {
+      if (genderFemale) ret.push(id);
+    }
+    else {
+      if (genderUnknown) ret.push(id);
+    }
+  });
+  return ret;
 }
 
 function reset() {
@@ -735,12 +777,12 @@ function compute() {
       attrSet.add(key);
     }
   });
-  console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
+  // console.log(`attrMap.size=${attrMap.size} filtered=${attrs.length}`);
 
   const [avg, std] = weighedNormalDist(mp);
-  console.log("Stat of scores:");
-  console.log(`avg=${avg}, std=${std}`);
-  console.log(Array.from(mp.entries()).sort((a, b) => a[0] - b[0]));
+  // console.log("Stat of scores:");
+  // console.log(`avg=${avg}, std=${std}`);
+  // console.log(Array.from(mp.entries()).sort((a, b) => a[0] - b[0]));
 
   const stat = [];
   for (var i = 0; i < attr_index.length; i++) {
